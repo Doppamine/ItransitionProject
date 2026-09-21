@@ -1,0 +1,25 @@
+security:
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            custom_authenticators:
+                - App\Security\SocialAuthenticator
+            entry_point: App\Security\SocialAuthenticator
+            logout:
+                path: app_logout
+                target: app_home
+
+    access_control:
+        - { path: ^/dashboard$, roles: IS_AUTHENTICATED }
+        - { path: ^/logout$, roles: IS_AUTHENTICATED }

@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login · Itransition Project{% endblock %}
+
+{% block body %}
+    <main class="container py-5">
+        <div class="card shadow-sm mx-auto" style="max-width: 28rem">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">Sign in</h1>
+                <p class="text-body-secondary">Choose a provider to continue.</p>
+                {% if loginError %}
+                    <div class="alert alert-danger" role="alert">Social sign-in could not be completed. Please try again.</div>
+                {% endif %}
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-primary" href="{{ path('app_google_start') }}">Continue with Google</a>
+                    <a class="btn btn-outline-dark" href="{{ path('app_github_start') }}">Continue with GitHub</a>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

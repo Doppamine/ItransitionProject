@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Projects · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a href="{{ path('app_profile') }}" class="d-inline-block mb-2">← Profile</a>
+            <h1 class="h2 mb-0">Your projects</h1>
+        </div>
+        <a class="btn btn-primary" href="{{ path('app_projects_new') }}">Add project</a>
+    </div>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message }}</div>{% endfor %}
+    {% for project in projects %}
+        <article class="card mb-3"><div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between gap-2">
+                <div>
+                    <h2 class="h5 mb-1">{{ project.name }}</h2>
+                    <p class="text-body-secondary small mb-2">{{ project.startDate|date('M Y') }} – {{ project.endDate ? project.endDate|date('M Y') : 'Present' }}</p>
+                </div>
+                <div class="d-flex align-items-start gap-2">
+                    <a class="btn btn-outline-primary btn-sm" href="{{ path('app_projects_edit', {id: project.id}) }}">Edit</a>
+                    <form method="post" action="{{ path('app_projects_delete', {id: project.id}) }}" onsubmit="return confirm('Delete this project?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('project_delete_' ~ project.id) }}">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% if project.description %}<p class="mb-2" style="white-space: pre-wrap">{{ project.description }}</p>{% endif %}
+            {% for tag in project.tags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% endfor %}
+        </div></article>
+    {% else %}
+        <p class="text-body-secondary">No projects yet. Add one to show your work.</p>
+    {% endfor %}
+</main>
+{% endblock %}

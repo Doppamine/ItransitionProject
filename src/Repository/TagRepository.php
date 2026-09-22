@@ -29,4 +29,10 @@ final class TagRepository extends ServiceEntityRepository
             ['prefix' => $prefix],
         )->fetchFirstColumn();
     }
+
+    /** @return list<Tag> */
+    public function findAlphabetical(int $limit = 100): array
+    {
+        return $this->createQueryBuilder('t')->orderBy('t.normalizedName', 'ASC')->setMaxResults($limit)->getQuery()->getResult();
+    }
 }

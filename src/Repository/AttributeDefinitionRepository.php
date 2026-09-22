@@ -22,12 +22,11 @@ final class AttributeDefinitionRepository extends ServiceEntityRepository
     public function search(string $prefix, ?int $categoryId, ?AttributeType $type): array
     {
         $sql = 'SELECT d.id, d.name, c.name AS category, d.type, d.is_built_in,
-                       COALESCE(usage.value_count, 0) AS usage_count
+                       ((SELECT COUNT(*) FROM profile_attribute_value v WHERE v.attribute_definition_id = d.id)
+                        + (SELECT COUNT(*) FROM position_attribute pa WHERE pa.attribute_definition_id = d.id)
+                        + (SELECT COUNT(*) FROM position_access_rule pr WHERE pr.attribute_definition_id = d.id)) AS usage_count
                 FROM attribute_definition d
                 JOIN attribute_category c ON c.id = d.category_id
-                LEFT JOIN (SELECT attribute_definition_id, COUNT(*) AS value_count
-                           FROM profile_attribute_value GROUP BY attribute_definition_id) usage
-                    ON usage.attribute_definition_id = d.id
                 WHERE LEFT(d.normalized_name, LENGTH(:prefix)) = :prefix';
         $parameters = ['prefix' => mb_strtolower(trim($prefix), 'UTF-8')];
         if ($categoryId !== null) {
@@ -45,17 +44,32 @@ final class AttributeDefinitionRepository extends ServiceEntityRepository
 
     public function isUsed(AttributeDefinition $definition): bool
     {
-        return (int) $this->getEntityManager()->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM profile_attribute_value WHERE attribute_definition_id = ?',
-            [$definition->getId()],
-        ) > 0;
+        return (bool) $this->getEntityManager()->getConnection()->fetchOne(
+            'SELECT EXISTS(SELECT 1 FROM profile_attribute_value WHERE attribute_definition_id = ?)
+                 OR EXISTS(SELECT 1 FROM position_attribute WHERE attribute_definition_id = ?)
+                 OR EXISTS(SELECT 1 FROM position_access_rule WHERE attribute_definition_id = ?)',
+            [$definition->getId(), $definition->getId(), $definition->getId()],
+        );
+    }
+
+    /** @return list<AttributeDefinition> */
+    public function findSelectable(bool $rulesOnly = false): array
+    {
+        $builder = $this->createQueryBuilder('d')->leftJoin('d.category', 'c')->addSelect('c')
+            ->orderBy('d.normalizedName', 'ASC')->setMaxResults(100);
+        if ($rulesOnly) {
+            $builder->andWhere('d.type != :image')->setParameter('image', AttributeType::IMAGE);
+        }
+        return $builder->getQuery()->getResult();
     }
 
     public function isOptionReferenced(AttributeOption $option): bool
     {
-        return (int) $this->getEntityManager()->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM profile_attribute_value WHERE option_id = ?',
-            [$option->getId()],
-        ) > 0;
+        return (bool) $this->getEntityManager()->getConnection()->fetchOne(
+            'SELECT EXISTS(SELECT 1 FROM profile_attribute_value WHERE option_id = ?)
+                 OR EXISTS(SELECT 1 FROM position_access_rule WHERE option_id = ?)',
+            [$option->getId(), $option->getId()],
+        );
     }
+
 }

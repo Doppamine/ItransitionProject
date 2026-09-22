@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% import 'positions/_rule_value.html.twig' as rule_value %}
+
+{% block title %}{{ position.title }} · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">← Positions</a>
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+        <div><h1 class="h2 mb-2">{{ position.title }}</h1><span class="badge text-bg-{{ position.accessType.value == 'public' ? 'success' : 'secondary' }}">{{ position.accessType.value|capitalize }}</span></div>
+        {% if manager %}<a class="btn btn-outline-primary" href="{{ path('app_positions_edit', {id: position.id}) }}">Edit position</a>{% endif %}
+    </div>
+    {% if position.shortDescription %}<p class="lead">{{ position.shortDescription }}</p>{% endif %}
+    <div class="row g-4">
+        <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">Template attributes</h2>
+            <ol class="mb-0">{% for item in position.attributes %}<li>{{ item.definition.name }}</li>{% else %}<li class="text-body-secondary">No attributes selected.</li>{% endfor %}</ol>
+        </div></div></section>
+        <section class="col-lg-5"><div class="card h-100"><div class="card-body"><h2 class="h5">Projects</h2><p>Maximum projects: <strong>{{ position.maxProjects }}</strong></p>
+            <div>{% for tag in position.projectTags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% else %}<span class="text-body-secondary">No relevant Project Tags.</span>{% endfor %}</div>
+        </div></div></section>
+    </div>
+    {% if manager %}<section class="card mt-4"><div class="card-body"><h2 class="h5">Access rules</h2>
+        {% for rule in position.accessRules %}<p class="mb-2"><strong>{{ rule.definition.name }}</strong> {{ rule.operator.label }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></p>{% else %}<p class="text-body-secondary mb-0">No Access Rules.</p>{% endfor %}
+    </div></section>{% endif %}
+</main>
+{% endblock %}

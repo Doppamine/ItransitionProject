@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+{% import 'positions/_rule_value.html.twig' as rule_value %}
+
+{% block title %}{{ position ? 'Edit position' : 'New position' }} · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">← Positions</a>
+    <h1 class="h2 mb-4">{{ position ? 'Edit position' : 'New position' }}</h1>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message }}</div>{% endfor %}
+    {% for message in app.flashes('error') %}<div class="alert alert-danger" role="alert">{{ message }}</div>{% endfor %}
+    <section class="card mb-4"><div class="card-body">
+        {{ form_start(form) }}{{ form_errors(form) }}
+        <div class="row g-3"><div class="col-12">{{ form_row(form.title) }}</div><div class="col-12">{{ form_row(form.shortDescription) }}</div><div class="col-md-6">{{ form_row(form.accessType) }}</div><div class="col-md-6">{{ form_row(form.maxProjects) }}</div></div>
+        <button class="btn btn-primary mt-3" type="submit">Save position</button>
+        {{ form_end(form) }}
+    </div></section>
+
+    {% if position %}
+        <div class="row g-4">
+            <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">Template attributes</h2>
+                <form method="post" action="{{ path('app_positions_attribute_add', {id: position.id}) }}" class="row g-2 mb-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}">
+                    <div class="col-sm-7"><select class="form-select" name="definition" required><option value="">Choose an attribute</option>{% for definition in definitions %}<option value="{{ definition.id }}">{{ definition.name }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-3"><input class="form-control" type="number" min="0" name="sortOrder" value="{{ position.attributes|length * 10 + 10 }}" aria-label="Sort order" required></div>
+                    <div class="col-sm-2"><button class="btn btn-outline-primary w-100" type="submit">Add</button></div>
+                </form>
+                {% for item in position.attributes %}<div class="d-flex gap-2 align-items-center border-top py-2"><span class="flex-grow-1">{{ item.definition.name }}</span>
+                    <form class="d-flex gap-2" method="post" action="{{ path('app_positions_attribute_order', {id: position.id, childId: item.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><input class="form-control form-control-sm" style="width:6rem" type="number" min="0" name="sortOrder" value="{{ item.sortOrder }}" aria-label="Sort order"><button class="btn btn-outline-secondary btn-sm">Order</button></form>
+                    <form method="post" action="{{ path('app_positions_attribute_remove', {id: position.id, childId: item.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><button class="btn btn-outline-danger btn-sm">Remove</button></form>
+                </div>{% else %}<p class="text-body-secondary">No template attributes.</p>{% endfor %}
+            </div></div></section>
+            <section class="col-lg-5"><div class="card h-100"><div class="card-body"><h2 class="h5">Relevant Project Tags</h2>
+                <form method="post" action="{{ path('app_positions_tag_add', {id: position.id}) }}" class="d-flex gap-2 mb-3"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><input class="form-control" list="position-tags" name="tag" placeholder="Existing tag" required><datalist id="position-tags">{% for tag in availableTags %}<option value="{{ tag.name }}">{% endfor %}</datalist><button class="btn btn-outline-primary">Add</button></form>
+                {% for link in position.projectTagLinks %}<div class="d-flex justify-content-between align-items-center border-top py-2"><span class="badge text-bg-secondary">{{ link.tag.name }}</span><form method="post" action="{{ path('app_positions_tag_remove', {id: position.id, childId: link.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><button class="btn btn-outline-danger btn-sm">Remove</button></form></div>{% else %}<p class="text-body-secondary">No relevant tags.</p>{% endfor %}
+                <p class="small text-body-secondary mt-3 mb-0">Suggestions are bounded to 100 existing global Tags.</p>
+            </div></div></section>
+        </div>
+        <section class="card mt-4"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Access Rules</h2><a class="btn btn-outline-primary btn-sm" href="{{ path('app_positions_rule_new', {id: position.id}) }}">Add rule</a></div>
+            {% for rule in position.accessRules %}<div class="d-flex justify-content-between align-items-center border-top py-2 mt-3"><span><strong>{{ rule.definition.name }}</strong> — {{ rule.operator.label }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></span><form method="post" action="{{ path('app_positions_rule_remove', {id: position.id, ruleId: rule.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><button class="btn btn-outline-danger btn-sm">Remove</button></form></div>{% else %}<p class="text-body-secondary mt-3 mb-0">No Access Rules. A restricted Position with no rules is unavailable to Candidates.</p>{% endfor %}
+        </div></section>
+        <div class="d-flex gap-2 mt-4"><form method="post" action="{{ path('app_positions_duplicate', {id: position.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_duplicate_' ~ position.id) }}"><button class="btn btn-outline-primary">Duplicate position</button></form><form method="post" action="{{ path('app_positions_delete', {id: position.id}) }}" onsubmit="return confirm('Delete this Position?')"><input type="hidden" name="_token" value="{{ csrf_token('position_delete_' ~ position.id) }}"><button class="btn btn-outline-danger">Delete position</button></form></div>
+    {% endif %}
+</main>
+{% endblock %}

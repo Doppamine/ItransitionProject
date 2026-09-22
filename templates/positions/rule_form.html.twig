@@ -1,0 +1,4 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Access Rule · Itransition Project{% endblock %}
+{% block body %}<main class="container py-4 py-lg-5"><a href="{{ path('app_positions_edit', {id: position.id}) }}">← Edit position</a><h1 class="h2 my-4">New Access Rule</h1><p>Attribute: <strong>{{ definition.name }}</strong> ({{ definition.type.value }})</p><div class="card"><div class="card-body">{{ form_start(form) }}{{ form_errors(form) }}{{ form_widget(form) }}<button class="btn btn-primary mt-3">Add Access Rule</button>{{ form_end(form) }}</div></div></main>{% endblock %}

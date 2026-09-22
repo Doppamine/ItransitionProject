@@ -17,7 +17,7 @@
             <div class="col-12">{{ form_row(form.description) }}</div>
             <div class="col-md-6">{{ form_row(form.type) }}</div>
         </div>
-        {% if definition and definition.builtIn %}<p class="small text-body-secondary">Built-in names and types are fixed.</p>{% elseif definition and used %}<p class="small text-body-secondary">This attribute is used by a profile. Its type is fixed.</p>{% elseif definition and definition.type.value == 'select' and definition.options is not empty %}<p class="small text-body-secondary">Remove all options before changing this type.</p>{% endif %}
+        {% if definition and definition.builtIn %}<p class="small text-body-secondary">Built-in names and types are fixed.</p>{% elseif definition and used %}<p class="small text-body-secondary">This attribute is used by a Profile or Position. Its type is fixed.</p>{% elseif definition and definition.type.value == 'select' and definition.options is not empty %}<p class="small text-body-secondary">Remove all options before changing this type.</p>{% endif %}
         <button type="submit" class="btn btn-primary mt-3">Save attribute</button>
         {{ form_end(form) }}
     </div></div>

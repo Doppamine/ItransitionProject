@@ -1,0 +1,4 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choose rule attribute · Itransition Project{% endblock %}
+{% block body %}<main class="container py-4 py-lg-5"><a href="{{ path('app_positions_edit', {id: position.id}) }}">← Edit position</a><h1 class="h2 my-4">Choose an Access Rule attribute</h1><form method="get" class="card card-body"><label class="form-label" for="rule-definition">Attribute</label><select id="rule-definition" class="form-select" name="definition" required><option value="">Choose an attribute</option>{% for definition in definitions %}<option value="{{ definition.id }}">{{ definition.name }} ({{ definition.type.value }})</option>{% endfor %}</select><button class="btn btn-primary mt-3 align-self-start">Continue</button></form></main>{% endblock %}

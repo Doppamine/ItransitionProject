@@ -13,6 +13,7 @@
             <div class="container">
                 <a class="navbar-brand" href="{{ path('app_home') }}">Itransition Project</a>
                 <div class="ms-auto d-flex align-items-center gap-3">
+                    <a class="nav-link" href="{{ path('app_positions_index') }}">Positions</a>
                     {% if app.user %}
                         {% if is_granted('ROLE_CANDIDATE') %}
                             <a class="nav-link" href="{{ path('app_profile') }}">Profile</a>

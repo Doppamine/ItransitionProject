@@ -53,6 +53,17 @@ final class ProfileRepository extends ServiceEntityRepository
         return $profile;
     }
 
+    public function findForEligibility(User $user): ?Profile
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.values', 'v')->addSelect('v')
+            ->leftJoin('v.definition', 'd')->addSelect('d')
+            ->leftJoin('v.option', 'o')->addSelect('o')
+            ->where('p.user = :user')->setParameter('user', $user)
+            ->setMaxResults(500)
+            ->getQuery()->getOneOrNullResult();
+    }
+
     /** @return list<array{id: int, name: string, category: string, type: string}> */
     public function searchAvailable(Profile $profile, string $prefix, ?int $categoryId): array
     {

@@ -9,8 +9,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\PersistentCollection;
+use App\Repository\ProfileRepository;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ProfileRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_profile_user', columns: ['user_id'])]
 final class Profile
 {

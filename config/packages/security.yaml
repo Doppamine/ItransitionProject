@@ -21,5 +21,6 @@ security:
                 target: app_home
 
     access_control:
+        - { path: ^/profile(?:/|$), roles: ROLE_CANDIDATE }
         - { path: ^/dashboard$, roles: IS_AUTHENTICATED }
         - { path: ^/logout$, roles: IS_AUTHENTICATED }

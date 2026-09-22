@@ -39,6 +39,14 @@ final class AuthenticationPagesTest extends WebTestCase
         self::assertResponseRedirects('/login');
     }
 
+    public function testAnonymousProfileRedirectsToLogin(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/profile');
+
+        self::assertResponseRedirects('/login');
+    }
+
     public function testMissingOAuthStateIsRejectedBeforeTokenExchange(): void
     {
         $client = static::createClient();

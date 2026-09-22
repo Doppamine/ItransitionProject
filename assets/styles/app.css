@@ -1,3 +1,15 @@
 body {
     min-width: 320px;
+    background: #f5f7fb;
 }
+
+.profile-page { max-width: 1080px; }
+.profile-page .card { border-radius: 1rem; }
+.profile-save-state { background: #eaf6ee; color: #176b3c; border-radius: 999px; padding: .55rem 1rem; font-weight: 600; white-space: nowrap; }
+.profile-save-state[data-state="dirty"] { background: #fff4df; color: #8b5b00; }
+.profile-save-state[data-state="saving"] { background: #eaf2ff; color: #174e9e; }
+.profile-save-state[data-state="conflict"] { background: #ffe9e8; color: #a51e24; white-space: normal; }
+.profile-empty { background: #f8f9fc; border: 1px dashed #cbd3e0; border-radius: .75rem; padding: 1.5rem; }
+.profile-optional-editor { background: #fafbfe; border: 1px solid #e5e9f1; border-radius: .75rem; padding: 1.25rem; }
+.profile-photo-placeholder { display: flex; align-items: center; gap: 1rem; background: #fafbfe; }
+.profile-editor .invalid-feedback:not(:empty) { display: block; }

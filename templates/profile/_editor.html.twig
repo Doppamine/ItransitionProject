@@ -1,0 +1,39 @@
+{% set definition = value.definition %}
+{% set type = definition.type.value %}
+<div class="profile-editor" data-definition-id="{{ definition.id }}">
+    {% if type == 'image' %}<div class="form-label fw-semibold">{{ definition.name }}</div>{% else %}<label class="form-label fw-semibold" for="attribute-{{ definition.id }}">{{ definition.name }}</label>{% endif %}
+    {% if type == 'string' %}
+        <input id="attribute-{{ definition.id }}" type="text" class="form-control" data-profile-part="value" value="{{ value.textValue ?? '' }}" autocomplete="off">
+    {% elseif type == 'text' %}
+        <textarea id="attribute-{{ definition.id }}" class="form-control" data-profile-part="value" rows="4" placeholder="Markdown text">{{ value.textValue ?? '' }}</textarea>
+    {% elseif type == 'numeric' %}
+        <input id="attribute-{{ definition.id }}" type="text" inputmode="decimal" class="form-control" data-profile-part="value" value="{{ value.numericValue ?? '' }}" placeholder="e.g. 12.5">
+    {% elseif type == 'date' %}
+        <input id="attribute-{{ definition.id }}" type="date" class="form-control" data-profile-part="value" value="{{ value.dateValue ? value.dateValue|date('Y-m-d') : '' }}">
+    {% elseif type == 'period' %}
+        <div class="row g-2">
+            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-start">Start</label><input id="attribute-{{ definition.id }}-start" type="date" class="form-control" data-profile-part="start" value="{{ value.periodStart ? value.periodStart|date('Y-m-d') : '' }}"></div>
+            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-end">End</label><input id="attribute-{{ definition.id }}-end" type="date" class="form-control" data-profile-part="end" value="{{ value.periodEnd ? value.periodEnd|date('Y-m-d') : '' }}"></div>
+        </div>
+    {% elseif type == 'boolean' %}
+        <select id="attribute-{{ definition.id }}" class="form-select" data-profile-part="value">
+            <option value="" {{ value.booleanValue is null ? 'selected' : '' }}>Not set</option>
+            <option value="true" {{ value.booleanValue is same as(true) ? 'selected' : '' }}>Yes</option>
+            <option value="false" {{ value.booleanValue is same as(false) ? 'selected' : '' }}>No</option>
+        </select>
+    {% elseif type == 'select' %}
+        <select id="attribute-{{ definition.id }}" class="form-select" data-profile-part="value">
+            <option value="">Not set</option>
+            {% for option in definition.options %}
+                <option value="{{ option.id }}" {{ value.option and value.option.id == option.id ? 'selected' : '' }}>{{ option.label }}</option>
+            {% endfor %}
+        </select>
+    {% elseif type == 'image' %}
+        <div class="profile-photo-placeholder rounded-3 border p-3 text-body-secondary">
+            <span aria-hidden="true" class="fs-3">◻</span>
+            <span>External image support is coming soon. {{ value.imageKey ? 'Photo preview is not available yet.' : 'No photo has been uploaded here yet.' }}</span>
+        </div>
+    {% endif %}
+    {% if definition.description %}<div class="form-text">{{ definition.description }}</div>{% endif %}
+    <div class="invalid-feedback" data-profile-error aria-live="polite"></div>
+</div>

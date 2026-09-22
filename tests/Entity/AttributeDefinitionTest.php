@@ -12,6 +12,67 @@ use PHPUnit\Framework\TestCase;
 
 final class AttributeDefinitionTest extends TestCase
 {
+    public function testEditableMetadataTouchesRootAndBuiltInNameAndTypeStayFixed(): void
+    {
+        $first = new AttributeCategory('First');
+        $second = new AttributeCategory('Second');
+        $definition = new AttributeDefinition($first, 'Language', AttributeType::STRING);
+        $before = $definition->getUpdatedAt();
+        $definition->changeCategory($second);
+        $definition->changeDescription('Spoken language');
+        $definition->changeType(AttributeType::TEXT, false);
+        $definition->rename('Languages');
+        self::assertSame($second, $definition->getCategory());
+        self::assertSame('Spoken language', $definition->getDescription());
+        self::assertSame(AttributeType::TEXT, $definition->getType());
+        self::assertSame('languages', $definition->getNormalizedName());
+        self::assertGreaterThan($before, $definition->getUpdatedAt());
+
+        $builtIn = new AttributeDefinition($first, 'First Name', AttributeType::STRING, isBuiltIn: true);
+        $this->expectException(\LogicException::class);
+        $builtIn->rename('Alias');
+    }
+
+    public function testTypeChangeRejectsUsedBuiltInAndSelectWithOptions(): void
+    {
+        $category = new AttributeCategory('Skills');
+        $used = new AttributeDefinition($category, 'Used', AttributeType::STRING);
+        $this->expectException(\LogicException::class);
+        $used->changeType(AttributeType::TEXT, true);
+    }
+
+    public function testSelectWithOptionsCannotChangeTypeButUnusedCanBecomeSelect(): void
+    {
+        $category = new AttributeCategory('Skills');
+        $definition = new AttributeDefinition($category, 'Language', AttributeType::STRING);
+        $definition->changeType(AttributeType::SELECT, false);
+        self::assertSame(AttributeType::SELECT, $definition->getType());
+        $definition->addOption('English', 10);
+        $this->expectException(\LogicException::class);
+        $definition->changeType(AttributeType::TEXT, false);
+    }
+
+    public function testBuiltInTypeAndDeletionAreProtected(): void
+    {
+        $definition = new AttributeDefinition(new AttributeCategory('Identity'), 'First Name', AttributeType::STRING, isBuiltIn: true);
+        try {
+            $definition->changeType(AttributeType::TEXT, false);
+            self::fail('Expected built-in type change to fail.');
+        } catch (\LogicException) {
+            self::assertSame(AttributeType::STRING, $definition->getType());
+        }
+        $this->expectException(\LogicException::class);
+        $definition->assertDeletable();
+    }
+
+    public function testTouchAdvancesAtLeastOnePersistedSecond(): void
+    {
+        $definition = new AttributeDefinition(new AttributeCategory('Skills'), 'Language', AttributeType::STRING);
+        $future = new \DateTimeImmutable('+1 day');
+        (new \ReflectionProperty(AttributeDefinition::class, 'updatedAt'))->setValue($definition, $future);
+        $definition->changeDescription('New description');
+        self::assertGreaterThanOrEqual($future->getTimestamp() + 1, $definition->getUpdatedAt()->getTimestamp());
+    }
     public function testNameIsTrimmedAndUnicodeLowercased(): void
     {
         $definition = new AttributeDefinition(new AttributeCategory('Skills'), '  RÉSUMÉ  ', AttributeType::STRING);

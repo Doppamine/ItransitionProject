@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Attribute Library · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 class="h2 mb-1">Attribute Library</h1><p class="text-body-secondary mb-0">Shared definitions for Candidate profiles.</p></div>
+        <a class="btn btn-primary" href="{{ path('app_attributes_new') }}">New attribute</a>
+    </div>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message }}</div>{% endfor %}
+    <form method="get" action="{{ path('app_attributes_index') }}" class="row g-2 align-items-end mb-3">
+        <div class="col-md-5"><label for="attribute-query" class="form-label">Name starts with</label><input id="attribute-query" class="form-control" name="q" maxlength="100" value="{{ q }}"></div>
+        <div class="col-md-3"><label for="attribute-category" class="form-label">Category</label><select id="attribute-category" class="form-select" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.id }}" {% if categoryId == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
+        <div class="col-md-3"><label for="attribute-type" class="form-label">Type</label><select id="attribute-type" class="form-select" name="type"><option value="">All types</option>{% for type in types %}<option value="{{ type.value }}" {% if selectedType == type.value %}selected{% endif %}>{{ type.value == 'select' ? 'One-of-many / Select' : type.value|capitalize }}</option>{% endfor %}</select></div>
+        <div class="col-md-1"><button class="btn btn-outline-primary w-100" type="submit">Find</button></div>
+    </form>
+    <div class="table-responsive border rounded">
+        <table class="table table-striped align-middle mb-0">
+            <thead><tr><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Type</th><th scope="col">Built in</th><th scope="col">Usage</th></tr></thead>
+            <tbody>
+            {% for definition in definitions %}
+                <tr><td><a href="{{ path('app_attributes_edit', {id: definition.id}) }}">{{ definition.name }}</a></td><td>{{ definition.category }}</td><td>{{ definition.type == 'select' ? 'One-of-many / Select' : definition.type|capitalize }}</td><td>{{ definition.is_built_in ? 'Yes' : 'No' }}</td><td>{{ definition.usage_count > 0 ? 'Used (' ~ definition.usage_count ~ ')' : 'Unused' }}</td></tr>
+            {% else %}
+                <tr><td colspan="5" class="text-body-secondary py-4 text-center">No matching attributes.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="small text-body-secondary mt-2">Showing up to 100 attributes. Narrow your search to find more.</p>
+</main>
+{% endblock %}

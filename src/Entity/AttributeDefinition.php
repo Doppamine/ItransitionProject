@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Enum\AttributeType;
+use App\Repository\AttributeDefinitionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: AttributeDefinitionRepository::class)]
 #[ORM\UniqueConstraint(name: 'uniq_attribute_definition_normalized_name', columns: ['normalized_name'])]
 final class AttributeDefinition
 {
@@ -136,9 +137,50 @@ final class AttributeDefinition
             return;
         }
 
+        if ($this->isBuiltIn && isset($this->name)) {
+            throw new \LogicException('Built-in attribute names cannot change.');
+        }
+
         $this->name = $name;
         $this->normalizedName = mb_strtolower($name, 'UTF-8');
         $this->touch();
+    }
+
+    public function changeCategory(AttributeCategory $category): void
+    {
+        if ($this->category === $category) {
+            return;
+        }
+        $this->category = $category;
+        $this->touch();
+    }
+
+    public function changeDescription(string $description): void
+    {
+        if ($this->description === $description) {
+            return;
+        }
+        $this->description = $description;
+        $this->touch();
+    }
+
+    public function changeType(AttributeType $type, bool $used): void
+    {
+        if ($this->type === $type) {
+            return;
+        }
+        if ($this->isBuiltIn || $used || ($this->type === AttributeType::SELECT && !$this->options->isEmpty())) {
+            throw new \LogicException('This attribute type cannot change.');
+        }
+        $this->type = $type;
+        $this->touch();
+    }
+
+    public function assertDeletable(): void
+    {
+        if ($this->isBuiltIn) {
+            throw new \LogicException('Built-in attributes cannot be deleted.');
+        }
     }
 
     public function addOption(string $label, int $sortOrder): AttributeOption
@@ -219,6 +261,7 @@ final class AttributeDefinition
     private function touch(): void
     {
         $now = new \DateTimeImmutable();
-        $this->updatedAt = $now > $this->updatedAt ? $now : $this->updatedAt->modify('+1 microsecond');
+        $nextPersistedSecond = $this->updatedAt->modify('+1 second');
+        $this->updatedAt = $now > $nextPersistedSecond ? $now : $nextPersistedSecond;
     }
 }

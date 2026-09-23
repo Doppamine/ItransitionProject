@@ -1,0 +1,13 @@
+<div class="rounded-3 p-3 mb-3 {{ item.missing ? 'border border-danger bg-danger-subtle' : 'border bg-body' }}">
+    {% if item.missing %}<span class="badge text-bg-danger float-end">Missing</span>{% endif %}
+    {% if editable %}
+        {% include 'profile/_editor.html.twig' with {definition: item.definition, value: item.value} only %}
+    {% else %}
+        <div class="fw-semibold mb-1">{{ item.definition.name }}</div>
+        {% if item.missing %}
+            <div class="text-danger fw-semibold">Missing value</div>
+        {% else %}
+            <div style="white-space: pre-wrap">{{ item.display }}</div>
+        {% endif %}
+    {% endif %}
+</div>

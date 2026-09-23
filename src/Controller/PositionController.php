@@ -11,6 +11,7 @@ use App\Enum\PositionAccessType;
 use App\Position\PositionEligibilityChecker;
 use App\Repository\PositionRepository;
 use App\Repository\ProfileRepository;
+use App\Repository\CVRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -32,16 +33,22 @@ final class PositionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(#[CurrentUser] ?User $user, int $id, PositionRepository $positions, ProfileRepository $profiles, PositionEligibilityChecker $eligibility): Response
+    public function show(#[CurrentUser] ?User $user, int $id, PositionRepository $positions, ProfileRepository $profiles, CVRepository $cvs, PositionEligibilityChecker $eligibility): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         $manager = $this->isGranted('ROLE_RECRUITER') || $this->isGranted('ROLE_ADMIN');
+        $profile = $user !== null && $this->isGranted('ROLE_CANDIDATE') ? $profiles->findForEligibility($user) : null;
+        $candidateEligible = $profile instanceof Profile && $eligibility->isEligible($position, $profile);
         if (!$manager && $position->getAccessType() === PositionAccessType::RESTRICTED) {
-            $profile = $user !== null && $this->isGranted('ROLE_CANDIDATE') ? $profiles->findForEligibility($user) : null;
-            if (!$profile instanceof Profile || !$eligibility->isEligible($position, $profile)) {
+            if (!$candidateEligible) {
                 throw $this->createNotFoundException('Position not found.');
             }
         }
-        return $this->render('positions/show.html.twig', ['position' => $position, 'manager' => $manager]);
+        return $this->render('positions/show.html.twig', [
+            'position' => $position,
+            'manager' => $manager,
+            'candidateEligible' => $candidateEligible,
+            'cv' => $candidateEligible ? $cvs->findOneBy(['profile' => $profile, 'position' => $position]) : null,
+        ]);
     }
 }

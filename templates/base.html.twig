@@ -18,6 +18,7 @@
                         {% if is_granted('ROLE_CANDIDATE') %}
                             <a class="nav-link" href="{{ path('app_profile') }}">Profile</a>
                             <a class="nav-link" href="{{ path('app_projects_index') }}">Projects</a>
+                            <a class="nav-link" href="{{ path('app_cv_index') }}">CVs</a>
                         {% endif %}
                         {% if is_granted('ROLE_RECRUITER') or is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_attributes_index') }}">Attribute Library</a>{% endif %}
                         <span class="text-body-secondary">{{ app.user.email }}</span>

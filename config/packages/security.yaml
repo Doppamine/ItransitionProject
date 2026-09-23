@@ -24,6 +24,7 @@ security:
                 target: app_home
 
     access_control:
+        - { path: ^/cvs(?:/|$), roles: IS_AUTHENTICATED }
         - { path: ^/attributes(?:/|$), roles: [ROLE_RECRUITER, ROLE_ADMIN] }
         - { path: ^/profile(?:/|$), roles: ROLE_CANDIDATE }
         - { path: ^/dashboard$, roles: IS_AUTHENTICATED }

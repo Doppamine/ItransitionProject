@@ -8,7 +8,21 @@
     <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">← Positions</a>
     <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
         <div><h1 class="h2 mb-2">{{ position.title }}</h1><span class="badge text-bg-{{ position.accessType.value == 'public' ? 'success' : 'secondary' }}">{{ position.accessType.value|capitalize }}</span></div>
-        {% if manager %}<a class="btn btn-outline-primary" href="{{ path('app_positions_edit', {id: position.id}) }}">Edit position</a>{% endif %}
+        <div class="d-flex gap-2">
+            {% if manager %}
+                <a class="btn btn-outline-primary" href="{{ path('app_positions_edit', {id: position.id}) }}">Edit position</a>
+                <a class="btn btn-primary" href="{{ path('app_position_cvs', {id: position.id}) }}">CVs</a>
+            {% elseif candidateEligible %}
+                {% if cv %}
+                    <a class="btn btn-primary" href="{{ path('app_cv_show', {id: cv.id}) }}">Open CV</a>
+                {% else %}
+                    <form method="post" action="{{ path('app_cv_create', {id: position.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_create_' ~ position.id) }}">
+                        <button class="btn btn-primary" type="submit">Create CV</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
     {% if position.shortDescription %}<p class="lead">{{ position.shortDescription }}</p>{% endif %}
     <div class="row g-4">

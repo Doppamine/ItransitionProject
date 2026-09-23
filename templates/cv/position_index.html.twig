@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CVs for {{ position.title }} · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <a href="{{ path('app_positions_show', {id: position.id}) }}" class="d-inline-block mb-3">← Position</a>
+    <h1 class="h2 mb-4">CVs for {{ position.title }}</h1>
+    <div class="table-responsive border rounded-3">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th scope="col">Candidate</th><th scope="col">Status</th><th scope="col">Created</th><th scope="col">Updated</th><th scope="col"><span class="visually-hidden">Open</span></th></tr></thead>
+            <tbody>
+                {% for cv in cvs %}
+                    <tr><td>{{ cv.profile.user.email }}</td><td><span class="badge text-bg-{{ cv.status.value == 'PUBLISHED' ? 'success' : 'secondary' }}">{{ cv.status.value|capitalize }}</span></td><td>{{ cv.createdAt|date('Y-m-d') }}</td><td>{{ cv.updatedAt|date('Y-m-d') }}</td><td class="text-end"><a href="{{ path('app_cv_show', {id: cv.id}) }}">Open CV</a></td></tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-body-secondary py-4">No visible CVs for this position.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}

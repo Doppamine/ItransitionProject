@@ -64,6 +64,20 @@ final class ProfileRepository extends ServiceEntityRepository
             ->getQuery()->getOneOrNullResult();
     }
 
+    /** @param list<Profile> $profiles */
+    public function hydrateValues(array $profiles): void
+    {
+        if ($profiles === []) {
+            return;
+        }
+        $ids = array_map(static fn (Profile $profile): int => (int) $profile->getId(), $profiles);
+        $this->getEntityManager()->createQueryBuilder()
+            ->select('p', 'v', 'd', 'o')->from(Profile::class, 'p')
+            ->leftJoin('p.values', 'v')->leftJoin('v.definition', 'd')->leftJoin('v.option', 'o')
+            ->where('p.id IN (:ids)')->setParameter('ids', $ids)
+            ->getQuery()->getResult();
+    }
+
     /** @return list<array{id: int, name: string, category: string, type: string}> */
     public function searchAvailable(Profile $profile, string $prefix, ?int $categoryId): array
     {

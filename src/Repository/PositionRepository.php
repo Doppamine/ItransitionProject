@@ -39,7 +39,7 @@ final class PositionRepository extends ServiceEntityRepository
     }
 
     /** @param list<Position> $positions */
-    private function hydrateChildren(array $positions): void
+    public function hydrateChildren(array $positions): void
     {
         if ($positions === []) {
             return;

@@ -1,4 +1,4 @@
-{% set definition = value.definition %}
+{% set definition = definition is defined ? definition : value.definition %}
 {% set type = definition.type.value %}
 <div class="profile-editor" data-definition-id="{{ definition.id }}">
     {% if type == 'image' %}<div class="form-label fw-semibold">{{ definition.name }}</div>{% else %}<label class="form-label fw-semibold" for="attribute-{{ definition.id }}">{{ definition.name }}</label>{% endif %}

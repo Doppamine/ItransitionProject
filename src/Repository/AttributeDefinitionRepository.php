@@ -72,4 +72,30 @@ final class AttributeDefinitionRepository extends ServiceEntityRepository
         );
     }
 
+    /** @return list<AttributeDefinition> */
+    public function findCVBuiltIns(): array
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.isBuiltIn = true')
+            ->orderBy('d.normalizedName', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    /** @param list<AttributeDefinition> $definitions */
+    public function hydrateOptions(array $definitions): void
+    {
+        $ids = [];
+        foreach ($definitions as $definition) {
+            if ($definition->getType() === AttributeType::SELECT && $definition->getId() !== null) {
+                $ids[] = $definition->getId();
+            }
+        }
+        if ($ids !== []) {
+            $this->getEntityManager()->createQueryBuilder()
+                ->select('d', 'o')->from(AttributeDefinition::class, 'd')
+                ->leftJoin('d.options', 'o')->where('d.id IN (:ids)')->setParameter('ids', $ids)
+                ->getQuery()->getResult();
+        }
+    }
+
 }

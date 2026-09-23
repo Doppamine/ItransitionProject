@@ -30,4 +30,24 @@ final class ProjectRepository extends ServiceEntityRepository
             ->addOrderBy('project.id', 'DESC')
             ->getQuery()->getResult();
     }
+
+    /** @param list<\App\Entity\Tag> $tags
+     *  @return list<Project>
+     */
+    public function findForCV(Profile $profile, array $tags, int $limit): array
+    {
+        if ($tags === [] || $limit <= 0) {
+            return [];
+        }
+        $tagIds = array_map(static fn ($tag): int => (int) $tag->getId(), $tags);
+
+        return $this->createQueryBuilder('project')
+            ->distinct()->join('project.tags', 'matchedTag')
+            ->addSelect('(CASE WHEN project.endDate IS NULL THEN 0 ELSE 1 END) AS HIDDEN endRank')
+            ->where('project.profile = :profile')->setParameter('profile', $profile)
+            ->andWhere('matchedTag.id IN (:tags)')->setParameter('tags', $tagIds)
+            ->orderBy('endRank', 'ASC')->addOrderBy('project.endDate', 'DESC')
+            ->addOrderBy('project.startDate', 'DESC')->addOrderBy('project.id', 'DESC')
+            ->setMaxResults($limit)->getQuery()->getResult();
+    }
 }

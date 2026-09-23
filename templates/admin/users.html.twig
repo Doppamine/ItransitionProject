@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'admin.users'|trans }} · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <h1 class="h2 mb-4">{{ 'admin.users'|trans }}</h1>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message|trans }}</div>{% endfor %}
+    {% for message in app.flashes('error') %}<div class="alert alert-danger" role="alert">{{ message|trans }}</div>{% endfor %}
+    <form method="get" action="{{ path('app_admin_users') }}" class="row g-2 mb-3"><div class="col-sm-8 col-md-5"><label for="admin-email" class="form-label">{{ 'admin.email_prefix'|trans }}</label><input id="admin-email" name="email" class="form-control" maxlength="100" value="{{ emailPrefix }}"></div><div class="col-sm-auto d-flex align-items-end"><button class="btn btn-outline-primary" type="submit">{{ 'common.find'|trans }}</button></div></form>
+    <form method="post" action="{{ path('app_admin_users_action') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('admin_users') }}">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3" role="group" aria-label="{{ 'admin.actions'|trans }}">
+            <label class="visually-hidden" for="admin-action">{{ 'admin.action'|trans }}</label>
+            <select id="admin-action" class="form-select w-auto" name="action" required>
+                <option value="">{{ 'admin.choose_action'|trans }}</option>
+                <option value="block">{{ 'admin.block'|trans }}</option><option value="unblock">{{ 'admin.unblock'|trans }}</option><option value="delete">{{ 'admin.delete'|trans }}</option>
+                <option value="add_candidate">{{ 'admin.add_candidate'|trans }}</option><option value="remove_candidate">{{ 'admin.remove_candidate'|trans }}</option>
+                <option value="add_recruiter">{{ 'admin.add_recruiter'|trans }}</option><option value="remove_recruiter">{{ 'admin.remove_recruiter'|trans }}</option>
+                <option value="add_admin">{{ 'admin.add_admin'|trans }}</option><option value="remove_admin">{{ 'admin.remove_admin'|trans }}</option>
+            </select>
+            <button class="btn btn-primary" type="submit">{{ 'admin.apply'|trans }}</button>
+        </div>
+        <div class="table-responsive border rounded-3"><table class="table table-hover align-middle mb-0"><thead><tr><th scope="col">{{ 'admin.select'|trans }}</th><th scope="col">{{ 'admin.email'|trans }}</th><th scope="col">{{ 'admin.roles'|trans }}</th><th scope="col">{{ 'admin.blocked'|trans }}</th><th scope="col">{{ 'admin.created'|trans }}</th></tr></thead><tbody>
+            {% for user in users %}<tr><td><input type="checkbox" name="ids[]" value="{{ user.id }}" class="form-check-input" aria-label="{{ 'admin.select_user'|trans({'%email%': user.email}) }}"></td><td>{{ user.email }}</td><td>{{ user.roles|map(role => ('admin.role.' ~ role)|trans)|join(', ') }}</td><td>{{ user.blocked ? 'common.yes'|trans : 'common.no'|trans }}</td><td>{{ user.createdAt|date('Y-m-d') }}</td></tr>
+            {% else %}<tr><td colspan="5" class="text-body-secondary py-4">{{ 'admin.empty'|trans }}</td></tr>{% endfor %}
+        </tbody></table></div>
+        <p class="small text-body-secondary mt-2">{{ 'admin.limit'|trans }}</p>
+    </form>
+</main>
+{% endblock %}

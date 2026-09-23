@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app.request.locale }}" data-bs-theme="{{ app.request.attributes.get('ui_theme', 'light') }}">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,31 +10,52 @@
     </head>
     <body>
         <header class="bg-body-tertiary border-bottom">
-        <nav class="navbar" aria-label="Main navigation">
-            <div class="container d-flex flex-wrap gap-3">
+        <nav class="navbar" aria-label="{{ 'nav.main'|trans }}">
+            <div class="container d-flex flex-wrap align-items-center gap-3">
                 <a class="navbar-brand" href="{{ path('app_home') }}">Itransition Project</a>
-                <form action="{{ path('app_search') }}" method="get" role="search" class="d-flex flex-grow-1" style="max-width: 24rem">
-                    <label class="visually-hidden" for="site-search">Search</label>
-                    <input id="site-search" class="form-control form-control-sm me-2" type="search" name="q" maxlength="200" placeholder="Search positions and CVs" value="{{ app.request.query.get('q') is same as(null) ? '' : app.request.query.get('q') }}">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>
+                <form action="{{ path('app_search') }}" method="get" role="search" class="d-flex flex-grow-1" style="max-width: 24rem; min-width: 12rem">
+                    <label class="visually-hidden" for="site-search">{{ 'nav.search'|trans }}</label>
+                    <input id="site-search" class="form-control form-control-sm me-2" type="search" name="q" maxlength="200" placeholder="{{ 'nav.search_placeholder'|trans }}" value="{{ app.request.query.get('q') is same as(null) ? '' : app.request.query.get('q') }}">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">{{ 'nav.search'|trans }}</button>
                 </form>
                 <div class="ms-auto d-flex flex-wrap align-items-center gap-3">
-                    <a class="nav-link" href="{{ path('app_positions_index') }}">Positions</a>
+                    <a class="nav-link" href="{{ path('app_positions_index') }}">{{ 'nav.positions'|trans }}</a>
                     {% if app.user %}
                         {% if is_granted('ROLE_CANDIDATE') %}
-                            <a class="nav-link" href="{{ path('app_profile') }}">Profile</a>
-                            <a class="nav-link" href="{{ path('app_projects_index') }}">Projects</a>
-                            <a class="nav-link" href="{{ path('app_cv_index') }}">CVs</a>
+                            <a class="nav-link" href="{{ path('app_profile') }}">{{ 'nav.profile'|trans }}</a>
+                            <a class="nav-link" href="{{ path('app_projects_index') }}">{{ 'nav.projects'|trans }}</a>
+                            <a class="nav-link" href="{{ path('app_cv_index') }}">{{ 'nav.cvs'|trans }}</a>
                         {% endif %}
-                        {% if is_granted('ROLE_RECRUITER') or is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_attributes_index') }}">Attribute Library</a>{% endif %}
+                        {% if is_granted('ROLE_RECRUITER') or is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_attributes_index') }}">{{ 'nav.attributes'|trans }}</a>{% endif %}
+                        {% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_admin_users') }}">{{ 'nav.users'|trans }}</a>{% endif %}
                         <span class="text-body-secondary">{{ app.user.email }}</span>
-                        <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_logout') }}">Logout</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_logout') }}">{{ 'nav.logout'|trans }}</a>
                     {% else %}
-                        <a class="btn btn-outline-primary btn-sm" href="{{ path('app_login') }}">Login</a>
+                        <a class="btn btn-outline-primary btn-sm" href="{{ path('app_login') }}">{{ 'nav.login'|trans }}</a>
                     {% endif %}
                 </div>
             </div>
         </nav>
+        <div class="container d-flex flex-wrap gap-2 align-items-center pb-2">
+            <form action="{{ path('app_preference_locale') }}" method="post" class="d-flex align-items-center gap-1">
+                <input type="hidden" name="_token" value="{{ csrf_token('preference_locale') }}">
+                <label class="visually-hidden" for="ui-locale">{{ 'preferences.language'|trans }}</label>
+                <select id="ui-locale" name="locale" class="form-select form-select-sm" aria-label="{{ 'preferences.language'|trans }}">
+                    <option value="en" {{ app.request.locale == 'en' ? 'selected' : '' }}>English</option>
+                    <option value="ru" {{ app.request.locale == 'ru' ? 'selected' : '' }}>Русский</option>
+                </select>
+                <button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'preferences.apply'|trans }}</button>
+            </form>
+            <form action="{{ path('app_preference_theme') }}" method="post" class="d-flex align-items-center gap-1">
+                <input type="hidden" name="_token" value="{{ csrf_token('preference_theme') }}">
+                <label class="visually-hidden" for="ui-theme">{{ 'preferences.theme'|trans }}</label>
+                <select id="ui-theme" name="theme" class="form-select form-select-sm" aria-label="{{ 'preferences.theme'|trans }}">
+                    <option value="light" {{ app.request.attributes.get('ui_theme', 'light') == 'light' ? 'selected' : '' }}>{{ 'preferences.light'|trans }}</option>
+                    <option value="dark" {{ app.request.attributes.get('ui_theme', 'light') == 'dark' ? 'selected' : '' }}>{{ 'preferences.dark'|trans }}</option>
+                </select>
+                <button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'preferences.apply'|trans }}</button>
+            </form>
+        </div>
         </header>
         {% block body %}{% endblock %}
     </body>

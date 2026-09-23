@@ -48,7 +48,7 @@ final class ProjectController extends AbstractController
                     $em->persist($project);
                     $em->flush();
                 });
-                $this->addFlash('success', 'Project created.');
+                $this->addFlash('success', 'flash.project_created');
                 return $this->redirectToRoute('app_projects_index');
             }
         }
@@ -79,7 +79,7 @@ final class ProjectController extends AbstractController
                     $tags->synchronize($project, $names);
                     $em->flush();
                 });
-                $this->addFlash('success', 'Project saved.');
+                $this->addFlash('success', 'flash.project_saved');
                 return $this->redirectToRoute('app_projects_index');
             }
         }
@@ -99,7 +99,7 @@ final class ProjectController extends AbstractController
 
         $em->remove($project);
         $em->flush();
-        $this->addFlash('success', 'Project deleted.');
+        $this->addFlash('success', 'flash.project_deleted');
         return $this->redirectToRoute('app_projects_index');
     }
 

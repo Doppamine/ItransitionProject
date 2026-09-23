@@ -5,33 +5,50 @@
     {% if type == 'string' %}
         <input id="attribute-{{ definition.id }}" type="text" class="form-control" data-profile-part="value" value="{{ value.textValue ?? '' }}" autocomplete="off">
     {% elseif type == 'text' %}
-        <textarea id="attribute-{{ definition.id }}" class="form-control" data-profile-part="value" rows="4" placeholder="Markdown text">{{ value.textValue ?? '' }}</textarea>
+        <textarea id="attribute-{{ definition.id }}" class="form-control" data-profile-part="value" rows="4" placeholder="{{ 'dynamic.markdown_placeholder'|trans }}">{{ value.textValue ?? '' }}</textarea>
     {% elseif type == 'numeric' %}
-        <input id="attribute-{{ definition.id }}" type="text" inputmode="decimal" class="form-control" data-profile-part="value" value="{{ value.numericValue ?? '' }}" placeholder="e.g. 12.5">
+        <input id="attribute-{{ definition.id }}" type="text" inputmode="decimal" class="form-control" data-profile-part="value" value="{{ value.numericValue ?? '' }}" placeholder="{{ 'dynamic.decimal_placeholder'|trans }}">
     {% elseif type == 'date' %}
         <input id="attribute-{{ definition.id }}" type="date" class="form-control" data-profile-part="value" value="{{ value.dateValue ? value.dateValue|date('Y-m-d') : '' }}">
     {% elseif type == 'period' %}
         <div class="row g-2">
-            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-start">Start</label><input id="attribute-{{ definition.id }}-start" type="date" class="form-control" data-profile-part="start" value="{{ value.periodStart ? value.periodStart|date('Y-m-d') : '' }}"></div>
-            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-end">End</label><input id="attribute-{{ definition.id }}-end" type="date" class="form-control" data-profile-part="end" value="{{ value.periodEnd ? value.periodEnd|date('Y-m-d') : '' }}"></div>
+            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-start">{{ 'ui.start'|trans }}</label><input id="attribute-{{ definition.id }}-start" type="date" class="form-control" data-profile-part="start" value="{{ value.periodStart ? value.periodStart|date('Y-m-d') : '' }}"></div>
+            <div class="col-sm-6"><label class="small text-body-secondary" for="attribute-{{ definition.id }}-end">{{ 'ui.end'|trans }}</label><input id="attribute-{{ definition.id }}-end" type="date" class="form-control" data-profile-part="end" value="{{ value.periodEnd ? value.periodEnd|date('Y-m-d') : '' }}"></div>
         </div>
     {% elseif type == 'boolean' %}
         <select id="attribute-{{ definition.id }}" class="form-select" data-profile-part="value">
-            <option value="" {{ value.booleanValue is null ? 'selected' : '' }}>Not set</option>
-            <option value="true" {{ value.booleanValue is same as(true) ? 'selected' : '' }}>Yes</option>
-            <option value="false" {{ value.booleanValue is same as(false) ? 'selected' : '' }}>No</option>
+            <option value="" {{ value.booleanValue is null ? 'selected' : '' }}>{{ 'ui.not_set'|trans }}</option>
+            <option value="true" {{ value.booleanValue is same as(true) ? 'selected' : '' }}>{{ 'ui.yes'|trans }}</option>
+            <option value="false" {{ value.booleanValue is same as(false) ? 'selected' : '' }}>{{ 'ui.no'|trans }}</option>
         </select>
     {% elseif type == 'select' %}
         <select id="attribute-{{ definition.id }}" class="form-select" data-profile-part="value">
-            <option value="">Not set</option>
+            <option value="">{{ 'ui.not_set'|trans }}</option>
             {% for option in definition.options %}
                 <option value="{{ option.id }}" {{ value.option and value.option.id == option.id ? 'selected' : '' }}>{{ option.label }}</option>
             {% endfor %}
         </select>
     {% elseif type == 'image' %}
-        <div class="profile-photo-placeholder rounded-3 border p-3 text-body-secondary">
-            <span aria-hidden="true" class="fs-3">◻</span>
-            <span>External image support is coming soon. {{ value.imageKey ? 'Photo preview is not available yet.' : 'No photo has been uploaded here yet.' }}</span>
+        {% set signRoute = imageScope == 'cv' ? 'app_cv_image_sign' : 'app_profile_image_sign' %}
+        {% set completeRoute = imageScope == 'cv' ? 'app_cv_image_complete' : 'app_profile_image_complete' %}
+        {% set routeParams = imageScope == 'cv' ? {targetId: imageTargetId, definitionId: definition.id} : {definitionId: definition.id} %}
+        <div class="profile-image-upload rounded-3 border p-3" data-controller="image-upload"
+             data-image-upload-sign-url-value="{{ path(signRoute, routeParams) }}"
+             data-image-upload-complete-url-value="{{ path(completeRoute, routeParams) }}"
+             data-image-upload-token-value="{{ csrf_token('image_' ~ imageScope ~ '_' ~ imageTargetId) }}"
+             data-image-upload-definition-id-value="{{ definition.id }}"
+             data-image-upload-error-message-value="{{ 'image.upload_failed'|trans }}"
+             data-action="dragover->image-upload#dragOver dragleave->image-upload#dragLeave drop->image-upload#drop">
+            {% set imageUrl = value and value.imageKey ? cloudinary_image_url(value.imageKey) : null %}
+            <img data-image-upload-target="preview" src="{{ imageUrl ?? '' }}" alt="{{ definition.name }}" class="img-fluid rounded-3 profile-image-preview mb-2 {{ imageUrl ? '' : 'd-none' }}">
+            <p class="small text-body-secondary mb-2">{{ 'image.hint'|trans }}</p>
+            <input data-image-upload-target="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="visually-hidden" id="image-file-{{ definition.id }}" data-action="change->image-upload#choose">
+            <div class="d-flex flex-wrap gap-2">
+                <label for="image-file-{{ definition.id }}" class="btn btn-outline-primary btn-sm">{{ 'image.choose'|trans }}</label>
+                <button type="button" class="btn btn-outline-danger btn-sm {{ imageUrl ? '' : 'd-none' }}" data-image-upload-target="clear" data-action="click->image-upload#clear">{{ 'common.remove'|trans }}</button>
+            </div>
+            <progress data-image-upload-target="progress" class="w-100 mt-2 d-none" max="100" value="0" aria-label="{{ 'image.progress'|trans }}"></progress>
+            <div data-image-upload-target="status" class="small mt-2" role="status" aria-live="polite"></div>
         </div>
     {% endif %}
     {% if definition.description %}<div class="form-text">{{ definition.description }}</div>{% endif %}

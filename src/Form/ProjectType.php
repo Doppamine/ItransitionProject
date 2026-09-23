@@ -16,11 +16,11 @@ final class ProjectType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class, ['label' => 'Project name', 'attr' => ['maxlength' => 255]])
-            ->add('startDate', DateType::class, ['label' => 'Start date', 'widget' => 'single_text', 'input' => 'datetime_immutable'])
-            ->add('endDate', DateType::class, ['label' => 'End date', 'widget' => 'single_text', 'input' => 'datetime_immutable', 'required' => false])
-            ->add('description', TextareaType::class, ['label' => 'Description (Markdown)', 'required' => false, 'attr' => ['rows' => 7, 'maxlength' => 10000]])
-            ->add('tags', TextType::class, ['label' => 'Technology tags', 'required' => false, 'attr' => ['maxlength' => 2500, 'autocomplete' => 'off']]);
+            ->add('name', TextType::class, ['label' => 'form.project_name', 'attr' => ['maxlength' => 255]])
+            ->add('startDate', DateType::class, ['label' => 'form.start_date', 'widget' => 'single_text', 'input' => 'datetime_immutable'])
+            ->add('endDate', DateType::class, ['label' => 'form.end_date', 'widget' => 'single_text', 'input' => 'datetime_immutable', 'required' => false])
+            ->add('description', TextareaType::class, ['label' => 'form.description_markdown', 'required' => false, 'attr' => ['rows' => 7, 'maxlength' => 10000]])
+            ->add('tags', TextType::class, ['label' => 'form.technology_tags', 'required' => false, 'attr' => ['maxlength' => 2500, 'autocomplete' => 'off']]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

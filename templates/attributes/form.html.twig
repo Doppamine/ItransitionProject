@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ definition ? 'Edit attribute' : 'New attribute' }} · Itransition Project{% endblock %}
+{% block title %}{{ (definition ? 'dynamic.edit_attribute' : 'ui.new_attribute')|trans }} · Itransition Project{% endblock %}
 
 {% block body %}
 <main class="container py-4 py-lg-5">
-    <a href="{{ path('app_attributes_index') }}" class="d-inline-block mb-3">← Attribute Library</a>
-    <h1 class="h2 mb-4">{{ definition ? 'Edit attribute' : 'New attribute' }}</h1>
-    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message }}</div>{% endfor %}
-    {% for message in app.flashes('error') %}<div class="alert alert-danger" role="alert">{{ message }}</div>{% endfor %}
+    <a href="{{ path('app_attributes_index') }}" class="d-inline-block mb-3">{{ 'ui.back_attributes'|trans }}</a>
+    <h1 class="h2 mb-4">{{ (definition ? 'dynamic.edit_attribute' : 'ui.new_attribute')|trans }}</h1>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message|trans }}</div>{% endfor %}
+    {% for message in app.flashes('error') %}<div class="alert alert-danger" role="alert">{{ message|trans }}</div>{% endfor %}
     <div class="card mb-4"><div class="card-body">
         {{ form_start(form) }}
         {{ form_errors(form) }}
@@ -17,40 +17,40 @@
             <div class="col-12">{{ form_row(form.description) }}</div>
             <div class="col-md-6">{{ form_row(form.type) }}</div>
         </div>
-        {% if definition and definition.builtIn %}<p class="small text-body-secondary">Built-in names and types are fixed.</p>{% elseif definition and used %}<p class="small text-body-secondary">This attribute is used by a Profile or Position. Its type is fixed.</p>{% elseif definition and definition.type.value == 'select' and definition.options is not empty %}<p class="small text-body-secondary">Remove all options before changing this type.</p>{% endif %}
-        <button type="submit" class="btn btn-primary mt-3">Save attribute</button>
+        {% if definition and definition.builtIn %}<p class="small text-body-secondary">{{ 'ui.built_in_fixed'|trans }}</p>{% elseif definition and used %}<p class="small text-body-secondary">{{ 'ui.attribute_type_fixed'|trans }}</p>{% elseif definition and definition.type.value == 'select' and definition.options is not empty %}<p class="small text-body-secondary">{{ 'ui.remove_all_options'|trans }}</p>{% endif %}
+        <button type="submit" class="btn btn-primary mt-3">{{ 'ui.save_attribute'|trans }}</button>
         {{ form_end(form) }}
     </div></div>
     {% if definition %}
         {% if definition.type.value == 'select' %}
             <section class="card mb-4"><div class="card-body">
-                <h2 class="h5">Select options</h2>
+                <h2 class="h5">{{ 'ui.select_options'|trans }}</h2>
                 <form method="post" action="{{ path('app_attributes_option_add', {id: definition.id}) }}" data-option-add class="d-flex gap-2 mb-3">
                     <input type="hidden" name="_token" value="{{ csrf_token('attribute_option_' ~ definition.id) }}">
-                    <input class="form-control" name="label" aria-label="New option label" maxlength="255" required>
-                    <button class="btn btn-outline-primary" type="submit">Add option</button>
+                    <input class="form-control" name="label" aria-label="{{ 'dynamic.new_option_label'|trans }}" maxlength="255" required>
+                    <button class="btn btn-outline-primary" type="submit">{{ 'ui.add_option'|trans }}</button>
                 </form>
-                {% if definition.options is empty %}<p class="text-body-secondary">No options yet.</p>{% endif %}
+                {% if definition.options is empty %}<p class="text-body-secondary">{{ 'ui.no_options'|trans }}</p>{% endif %}
                 {% for option in definition.options %}
                     <div class="d-flex flex-wrap gap-2 align-items-center border-top py-2">
-                        <span class="text-body-secondary small" aria-label="Order">{{ option.sortOrder }}</span>
+                        <span class="text-body-secondary small" aria-label="{{ 'ui.order'|trans }}">{{ option.sortOrder }}</span>
                         <form method="post" action="{{ path('app_attributes_option_rename', {id: definition.id, optionId: option.id}) }}" class="d-flex gap-2 flex-grow-1">
                             <input type="hidden" name="_token" value="{{ csrf_token('attribute_option_' ~ definition.id) }}">
-                            <input class="form-control" name="label" aria-label="Option label" value="{{ option.label }}" maxlength="255" required>
-                            <button class="btn btn-outline-secondary" type="submit">Rename</button>
+                            <input class="form-control" name="label" aria-label="{{ 'dynamic.option_label'|trans }}" value="{{ option.label }}" maxlength="255" required>
+                            <button class="btn btn-outline-secondary" type="submit">{{ 'ui.rename'|trans }}</button>
                         </form>
                         <form method="post" action="{{ path('app_attributes_option_remove', {id: definition.id, optionId: option.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('attribute_option_' ~ definition.id) }}">
-                            <button class="btn btn-outline-danger" type="submit">Remove</button>
+                            <button class="btn btn-outline-danger" type="submit">{{ 'ui.remove'|trans }}</button>
                         </form>
                     </div>
                 {% endfor %}
             </div></section>
         {% endif %}
         {% if not definition.builtIn %}
-            <form method="post" action="{{ path('app_attributes_delete', {id: definition.id}) }}" data-delete onsubmit="return confirm('Delete this attribute and its profile values?')">
+            <form method="post" action="{{ path('app_attributes_delete', {id: definition.id}) }}" data-delete onsubmit="return confirm({{ 'dynamic.delete_attribute_confirm'|trans|json_encode|raw }})">
                 <input type="hidden" name="_token" value="{{ csrf_token('attribute_delete_' ~ definition.id) }}">
-                <button class="btn btn-outline-danger" type="submit">Delete attribute</button>
+                <button class="btn btn-outline-danger" type="submit">{{ 'ui.delete_attribute'|trans }}</button>
             </form>
         {% endif %}
     {% endif %}

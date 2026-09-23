@@ -1,0 +1,316 @@
+nav:
+    main: 'Основная навигация'
+    search: Поиск
+    search_placeholder: 'Поиск вакансий и резюме'
+    positions: Вакансии
+    profile: Профиль
+    projects: Проекты
+    cvs: Резюме
+    attributes: 'Библиотека атрибутов'
+    users: Пользователи
+    logout: Выйти
+    login: Войти
+preferences:
+    language: Язык
+    theme: Тема
+    light: Светлая
+    dark: Тёмная
+    apply: Применить
+common:
+    remove: Удалить
+    find: Найти
+    'yes': Да
+    'no': Нет
+    position: Вакансия
+    access: Доступ
+    updated: Обновлено
+home:
+    title: Главная
+    intro: 'Актуальные вакансии и активность.'
+    latest: 'Новые вакансии'
+    popular: 'Популярные вакансии'
+    submitted_cvs: 'Отправленные резюме'
+    no_positions: 'Доступных вакансий нет.'
+    tags: 'Облако технологий'
+    no_tags: 'Технологий пока нет.'
+    statistics: Статистика
+    cvs_24h: 'Резюме за последние 24 часа'
+    total_positions: 'Всего вакансий'
+    candidates: Кандидаты
+    recruiters: Рекрутеры
+auth:
+    sign_in: Войти
+    choose_provider: 'Выберите способ входа.'
+    error: 'Не удалось войти через социальную сеть. Попробуйте ещё раз.'
+    google: 'Продолжить через Google'
+    github: 'Продолжить через GitHub'
+image:
+    unavailable: Просмотр изображения недоступен.
+    hint: 'Перетащите изображение сюда или выберите файл (JPEG, PNG, WebP или GIF; до 5 МБ).'
+    choose: 'Выбрать изображение'
+    progress: 'Загрузка изображения'
+    upload_failed: 'Не удалось загрузить изображение. Проверьте файл и попробуйте ещё раз.'
+attributes:
+    recent: 'Недавно использованные атрибуты'
+    all: 'Все атрибуты'
+admin:
+    users: Пользователи
+    email_prefix: 'Начало адреса почты'
+    actions: 'Действия с выбранными пользователями'
+    action: Действие
+    choose_action: 'Выберите действие'
+    block: Заблокировать
+    unblock: Разблокировать
+    delete: Удалить
+    add_candidate: 'Добавить роль кандидата'
+    remove_candidate: 'Удалить роль кандидата'
+    add_recruiter: 'Добавить роль рекрутера'
+    remove_recruiter: 'Удалить роль рекрутера'
+    add_admin: 'Добавить роль администратора'
+    remove_admin: 'Удалить роль администратора'
+    apply: 'Применить к выбранным'
+    select: Выбрать
+    select_user: 'Выбрать %email%'
+    email: Почта
+    roles: Роли
+    blocked: Заблокирован
+    created: Создан
+    empty: 'Пользователи не найдены.'
+    limit: 'Показаны первые 100 пользователей.'
+    role:
+        ROLE_CANDIDATE: Кандидат
+        ROLE_RECRUITER: Рекрутер
+        ROLE_ADMIN: Администратор
+ui:
+    access_rules_lower: Правила доступа
+    back_attributes: '← Библиотека атрибутов'
+    back_edit_position: '← Редактировать вакансию'
+    back_main: '← Главная'
+    back_position: '← Вакансия'
+    back_positions: '← Вакансии'
+    back_profile: '← Профиль'
+    back_projects: '← Проекты'
+    access: Доступ
+    access_rules: 'Правила доступа'
+    actions: Действия
+    add: Добавить
+    add_access_rule: 'Добавить правило доступа'
+    add_attribute: 'Добавить атрибут'
+    add_option: 'Добавить вариант'
+    add_project: 'Добавить проект'
+    add_rule: 'Добавить правило'
+    all_categories: 'Все категории'
+    all_types: 'Все типы'
+    attribute: Атрибут
+    attribute_library: 'Библиотека атрибутов'
+    attribute_colon: 'Атрибут:'
+    attributes: Атрибуты
+    available_cv_templates: 'Доступные шаблоны резюме.'
+    browse_positions: 'Смотреть вакансии'
+    built_in: Встроенный
+    built_in_fixed: 'Названия и типы встроенных атрибутов нельзя изменить.'
+    candidate: Кандидат
+    candidate_cv: 'Резюме кандидата'
+    candidate_profile: 'Профиль кандидата'
+    candidate_workspace: 'Рабочее пространство кандидата'
+    category: Категория
+    choose_rule_attribute: 'Выберите атрибут правила доступа'
+    choose_attribute: 'Выберите атрибут'
+    choose_details: 'Выберите сведения, которые описывают ваш опыт.'
+    continue: Продолжить
+    create_cv: 'Создать резюме'
+    created: Создано
+    cvs: Резюме
+    dashboard: 'Панель управления'
+    delete: Удалить
+    delete_attribute: 'Удалить атрибут'
+    delete_position: 'Удалить вакансию'
+    discussion: Обсуждение
+    discussion_unavailable: 'Обсуждение этой вакансии недоступно.'
+    duplicate_position: 'Дублировать вакансию'
+    edit: Редактировать
+    edit_position: 'Редактировать вакансию'
+    cv_autosave_hint: 'Изменения обновляют профиль и сохраняются каждые семь секунд.'
+    end: Окончание
+    search_prompt: 'Введите запрос для поиска вакансий.'
+    find: Найти
+    identity_contact: 'Личные и контактные данные'
+    info: Информация
+    profile_autosave_hint: 'Поддерживайте данные в актуальном состоянии. Изменения сохраняются каждые семь секунд.'
+    likes: Нравится
+    markdown_hint: 'Поддерживается Markdown. Сообщения нельзя редактировать или удалять.'
+    maximum_projects: 'Максимум проектов:'
+    me: 'О себе'
+    missing: 'Не заполнено'
+    missing_value: 'Значение отсутствует'
+    my_cvs: 'Мои резюме'
+    name: Название
+    name_starts_with: 'Название начинается с'
+    new_access_rule: 'Новое правило доступа'
+    new_attribute: 'Новый атрибут'
+    new_position: 'Новая вакансия'
+    new_post: 'Новое сообщение'
+    'no': Нет
+    no_access_rules: 'Правил доступа нет.'
+    no_access_rules_restricted: 'Правил доступа нет. Вакансия с ограниченным доступом без правил недоступна кандидатам.'
+    no_accessible_cvs: 'Доступных резюме пока нет.'
+    no_additional_attributes: 'Дополнительных атрибутов вакансии нет.'
+    no_attributes_selected: 'Атрибуты не выбраны.'
+    no_available_attributes: 'Доступных атрибутов по запросу нет.'
+    no_cvs_for_tag: 'Для этого тега нет резюме.'
+    no_extra_details: 'Дополнительных сведений пока нет. Найдите атрибут ниже, чтобы добавить его.'
+    no_matching_attributes: 'Подходящих атрибутов нет.'
+    no_matching_cvs: 'Подходящих резюме нет.'
+    no_matching_positions: 'Подходящих вакансий нет.'
+    no_matching_projects: 'Подходящих проектов нет.'
+    no_options: 'Вариантов пока нет.'
+    no_positions_for_tag: 'Для этого тега нет вакансий.'
+    no_positions: 'Доступных вакансий нет.'
+    no_projects_shared: 'Общих проектов нет.'
+    no_projects: 'Проектов пока нет. Добавьте проект, чтобы показать свою работу.'
+    no_project_tags: 'Подходящих тегов проектов нет.'
+    no_relevant_tags: 'Подходящих тегов нет.'
+    no_template_attributes: 'Атрибутов шаблона нет.'
+    no_visible_cvs: 'Для этой вакансии нет доступных резюме.'
+    not_set: 'Не задано'
+    open: Открыть
+    open_cv: 'Открыть резюме'
+    order: Порядок
+    position: Вакансия
+    position_details: 'Данные вакансии'
+    positions: Вакансии
+    post: Опубликовать
+    project_limit: 'Лимит проектов'
+    projects: Проекты
+    publish_cv: 'Опубликовать резюме'
+    relevant_project_tags: 'Подходящие теги проектов'
+    relevant_projects: 'Подходящие проекты'
+    remove: Удалить
+    remove_all_options: 'Удалите все варианты перед изменением типа.'
+    remove_attribute: 'Удалить атрибут'
+    rename: Переименовать
+    save_attribute: 'Сохранить атрибут'
+    save_position: 'Сохранить вакансию'
+    save_project: 'Сохранить проект'
+    saved: Сохранено
+    search: Поиск
+    search_by_name: 'Поиск по названию'
+    select_options: 'Варианты выбора'
+    project_tags_hint: 'Разделяйте теги запятыми. Существующие теги появятся в подсказках; новые сохранятся с проектом.'
+    shared_definitions: 'Общие определения для профилей кандидатов.'
+    attributes_limit: 'Показаны первые 100 атрибутов. Уточните поиск, чтобы найти другие.'
+    positions_limit: 'Показаны первые 100 вакансий.'
+    available_attributes_limit: 'Показаны первые 20 доступных атрибутов.'
+    sign_in: Войти
+    start: Начало
+    status: Статус
+    tags_limit: 'В подсказках показаны первые 100 существующих общих тегов.'
+    template_attributes: 'Атрибуты шаблона'
+    essential_details: 'Основные сведения о вас.'
+    attribute_type_fixed: 'Этот атрибут используется в профиле или вакансии. Его тип нельзя изменить.'
+    title: Название
+    discussion_join_suffix: 'для участия в обсуждении.'
+    type: Тип
+    updated: Обновлено
+    usage: Использование
+    'yes': Да
+    your_profile: 'Ваш профиль'
+    your_projects: 'Ваши проекты'
+enum:
+    access:
+        public: Открытый
+        restricted: Ограниченный
+    cv_status:
+        DRAFT: Черновик
+        PUBLISHED: Опубликовано
+    type:
+        string: Строка
+        text: Текст
+        image: Изображение
+        numeric: Число
+        date: Дата
+        period: Период
+        boolean: Логический
+        select: Выбор одного из многих
+    operator:
+        equal: Равно
+        not_equal: Не равно
+        greater_than: Больше
+        greater_than_or_equal: Больше или равно
+        less_than: Меньше
+        less_than_or_equal: Меньше или равно
+form:
+    short_description: Краткое описание
+    maximum_projects: Максимум проектов
+    project_name: Название проекта
+    start_date: Дата начала
+    end_date: Дата окончания
+    description_markdown: Описание (Markdown)
+    technology_tags: Технологические теги
+    description: Описание
+    expected_value: Ожидаемое значение
+    expected_number: Ожидаемое число
+    expected_date: Ожидаемая дата
+    expected_start: Начало периода
+    expected_end: Конец периода
+    expected_option: Ожидаемый вариант
+    operator: Оператор
+dynamic:
+    edit_attribute: Редактировать атрибут
+    used_count: 'Используется (%count%)'
+    unused: Не используется
+    edit_project: Редактировать проект
+    new_project: Новый проект
+    search_results: 'Результаты по запросу «%query%»'
+    cvs_for: 'Резюме для вакансии %position%'
+    cv_for: 'Резюме для вакансии %position%'
+    signed_in_as: 'Вы вошли как %email%.'
+    roles: 'Роли: %roles%'
+    like: отметка «Нравится»
+    likes: отметок «Нравится»
+    present: Сейчас
+    markdown_placeholder: Текст Markdown
+    decimal_placeholder: например, 12,5
+    attribute_prefix_placeholder: Начало названия атрибута
+    existing_tag_placeholder: Существующий тег
+    sort_order: Порядок сортировки
+    new_option_label: Название нового варианта
+    option_label: Название варианта
+    profile_sections: Разделы профиля
+    delete_project_confirm: Удалить этот проект?
+    delete_position_confirm: Удалить эту вакансию?
+    delete_attribute_confirm: Удалить этот атрибут и значения в профилях?
+    yes: Да
+    no: Нет
+flash:
+    attribute_already_selected: Этот атрибут уже выбран.
+    tag_already_selected: Этот тег проекта уже выбран.
+    option_label_length: Введите название варианта длиной до 255 символов.
+    option_label_invalid: Название варианта уже существует или недопустимо.
+    attribute_changed: Атрибут изменён в другом месте. Обновите страницу перед изменением вариантов.
+    option_in_use: Этот вариант используется и не может быть удалён.
+    admin_self: Вы не можете заблокировать или удалить свой текущий аккаунт.
+    admin_updated: Выбранные пользователи обновлены.
+    project_created: Проект создан.
+    project_saved: Проект сохранён.
+    project_deleted: Проект удалён.
+    position_created: Вакансия создана.
+    position_saved: Вакансия сохранена.
+    position_duplicated: Вакансия дублирована.
+    position_deleted: Вакансия удалена.
+    template_attribute_added: Атрибут шаблона добавлен.
+    project_tag_added: Тег проекта добавлен.
+    access_rule_added: Правило доступа добавлено.
+    attribute_created: Атрибут создан.
+    attribute_saved: Атрибут сохранён.
+    attribute_deleted: Атрибут удалён.
+    option_added: Вариант добавлен.
+    option_renamed: Вариант переименован.
+    option_removed: Вариант удалён.
+autosave:
+    dirty: Есть несохранённые изменения
+    saving: Сохранение…
+    saved: Сохранено
+    conflict: Профиль изменён в другом месте. Обновите страницу.
+    wait: Подождите сохранения изменений
+    invalid: Проверьте значение и попробуйте ещё раз.

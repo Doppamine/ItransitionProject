@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\RecentAttributeTracker;
 use App\Entity\AttributeDefinition;
 use App\Entity\AttributeOption;
 use App\Entity\Position;
@@ -47,7 +48,7 @@ final class PositionManagementController extends AbstractController
                 $position = new Position((string) $data['title'], (string) ($data['shortDescription'] ?? ''), PositionAccessType::from($data['accessType']), (int) $data['maxProjects']);
                 $em->persist($position);
                 $em->flush();
-                $this->addFlash('success', 'Position created.');
+                $this->addFlash('success', 'flash.position_created');
                 return $this->redirectToRoute('app_positions_index');
             } catch (\InvalidArgumentException $exception) {
                 $form->addError(new FormError($exception->getMessage()));
@@ -57,7 +58,7 @@ final class PositionManagementController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function edit(int $id, Request $request, PositionRepository $positions, AttributeDefinitionRepository $definitions, TagRepository $tags, EntityManagerInterface $em): Response
+    public function edit(int $id, Request $request, PositionRepository $positions, AttributeDefinitionRepository $definitions, TagRepository $tags, EntityManagerInterface $em, RecentAttributeTracker $recents): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         $form = $this->createForm(PositionType::class, [
@@ -73,7 +74,7 @@ final class PositionManagementController extends AbstractController
                 $this->lock($position, $data['version'] ?? null, $em);
                 $position->update((string) $data['title'], (string) ($data['shortDescription'] ?? ''), PositionAccessType::from($data['accessType']), (int) $data['maxProjects']);
                 $em->flush();
-                $this->addFlash('success', 'Position saved.');
+                $this->addFlash('success', 'flash.position_saved');
                 return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
             } catch (OptimisticLockException|\UnexpectedValueException) {
                 $form->addError(new FormError('This Position changed elsewhere. Reload before editing.'));
@@ -85,7 +86,7 @@ final class PositionManagementController extends AbstractController
         } elseif ($form->isSubmitted()) {
             $status = 422;
         }
-        return $this->render('positions/form.html.twig', $this->formContext($form, $position, $definitions, $tags), new Response(status: $status));
+        return $this->render('positions/form.html.twig', $this->formContext($form, $position, $definitions, $tags, $recents), new Response(status: $status));
     }
 
     #[Route('/{id}/duplicate', name: 'duplicate', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -97,7 +98,7 @@ final class PositionManagementController extends AbstractController
         }
         $em->persist($duplicator->duplicate($position));
         $em->flush();
-        $this->addFlash('success', 'Position duplicated.');
+        $this->addFlash('success', 'flash.position_duplicated');
         return $this->redirectToRoute('app_positions_index');
     }
 
@@ -110,12 +111,12 @@ final class PositionManagementController extends AbstractController
         }
         $em->remove($position);
         $em->flush();
-        $this->addFlash('success', 'Position deleted.');
+        $this->addFlash('success', 'flash.position_deleted');
         return $this->redirectToRoute('app_positions_index');
     }
 
     #[Route('/{id}/attributes/add', name: 'attribute_add', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function addAttribute(int $id, Request $request, PositionRepository $positions, EntityManagerInterface $em): Response
+    public function addAttribute(int $id, Request $request, PositionRepository $positions, EntityManagerInterface $em, RecentAttributeTracker $recents): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         if (($error = $this->lockChild($position, $request, $em)) !== null) { return $error; }
@@ -126,9 +127,10 @@ final class PositionManagementController extends AbstractController
             if (!$definition instanceof AttributeDefinition || !is_string($sortOrder) || !ctype_digit($sortOrder)) { throw new \InvalidArgumentException('Choose an attribute and a non-negative order.'); }
             $position->addAttribute($definition, (int) $sortOrder);
             $em->flush();
-            $this->addFlash('success', 'Template attribute added.');
+            $recents->record((int) $definition->getId());
+            $this->addFlash('success', 'flash.template_attribute_added');
         } catch (\InvalidArgumentException|UniqueConstraintViolationException $exception) {
-            $this->addFlash('error', $exception instanceof \InvalidArgumentException ? $exception->getMessage() : 'This attribute is already selected.');
+            $this->addFlash('error', $exception instanceof \InvalidArgumentException ? $exception->getMessage() : 'flash.attribute_already_selected');
         }
         return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
     }
@@ -166,9 +168,9 @@ final class PositionManagementController extends AbstractController
             if ($tag === null) { throw new \InvalidArgumentException('Choose an existing Project Tag.'); }
             $position->addProjectTag($tag);
             $em->flush();
-            $this->addFlash('success', 'Project Tag added.');
+            $this->addFlash('success', 'flash.project_tag_added');
         } catch (\InvalidArgumentException|UniqueConstraintViolationException $exception) {
-            $this->addFlash('error', $exception instanceof \InvalidArgumentException ? $exception->getMessage() : 'This Project Tag is already selected.');
+            $this->addFlash('error', $exception instanceof \InvalidArgumentException ? $exception->getMessage() : 'flash.tag_already_selected');
         }
         return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
     }
@@ -214,7 +216,7 @@ final class PositionManagementController extends AbstractController
                 $rule = new PositionAccessRule($position, $definition, $operator);
                 $this->applyExpected($rule, $definition, $data, $em);
                 $em->flush();
-                $this->addFlash('success', 'Access Rule added.');
+                $this->addFlash('success', 'flash.access_rule_added');
                 return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
             } catch (OptimisticLockException|\UnexpectedValueException) {
                 $form->addError(new FormError('This Position changed elsewhere. Reload before adding a rule.'));
@@ -241,11 +243,12 @@ final class PositionManagementController extends AbstractController
     }
 
     /** @return array<string, mixed> */
-    private function formContext(FormInterface $form, ?Position $position, ?AttributeDefinitionRepository $definitions = null, ?TagRepository $tags = null): array
+    private function formContext(FormInterface $form, ?Position $position, ?AttributeDefinitionRepository $definitions = null, ?TagRepository $tags = null, ?RecentAttributeTracker $recents = null): array
     {
         return ['form' => $form, 'position' => $position,
             'definitions' => $position === null ? [] : $definitions?->findSelectable() ?? [],
-            'availableTags' => $position === null ? [] : $tags?->findAlphabetical() ?? []];
+            'availableTags' => $position === null ? [] : $tags?->findAlphabetical() ?? [],
+            'recent' => $recents?->list() ?? []];
     }
 
     private function lock(Position $position, mixed $version, EntityManagerInterface $em): void

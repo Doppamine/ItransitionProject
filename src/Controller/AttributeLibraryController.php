@@ -70,7 +70,7 @@ final class AttributeLibraryController extends AbstractController
                     $form->get('name')->addError(new FormError('An attribute with this name already exists.'));
                 }
                 if ($form->isValid()) {
-                    $this->addFlash('success', 'Attribute created.');
+                    $this->addFlash('success', 'flash.attribute_created');
                     return $this->redirectToRoute('app_attributes_index');
                 }
             }
@@ -164,7 +164,7 @@ final class AttributeLibraryController extends AbstractController
                         $status = Response::HTTP_CONFLICT;
                     }
                     if ($form->isValid()) {
-                        $this->addFlash('success', 'Attribute saved.');
+                        $this->addFlash('success', 'flash.attribute_saved');
                         return $this->redirectToRoute('app_attributes_edit', ['id' => $definition->getId()]);
                     }
                 }
@@ -185,7 +185,7 @@ final class AttributeLibraryController extends AbstractController
         }
         $definition->assertDeletable();
         $em->getConnection()->executeStatement('DELETE FROM attribute_definition WHERE id = ?', [$definition->getId()]);
-        $this->addFlash('success', 'Attribute deleted.');
+        $this->addFlash('success', 'flash.attribute_deleted');
         return $this->redirectToRoute('app_attributes_index');
     }
 
@@ -200,18 +200,18 @@ final class AttributeLibraryController extends AbstractController
         }
         $label = $request->request->get('label');
         if (!is_string($label) || mb_strlen(trim($label)) > 255) {
-            $this->addFlash('error', 'Enter an option label of at most 255 characters.');
+            $this->addFlash('error', 'flash.option_label_length');
         } else {
             $options = $definition->getOptions();
             $order = $options === [] ? 10 : max(array_map(static fn (AttributeOption $option): int => $option->getSortOrder(), $options)) + 10;
             try {
                 $definition->addOption($label, $order);
                 $em->flush();
-                $this->addFlash('success', 'Option added.');
+                $this->addFlash('success', 'flash.option_added');
             } catch (\InvalidArgumentException|UniqueConstraintViolationException) {
-                $this->addFlash('error', 'Option label already exists or is invalid.');
+                $this->addFlash('error', 'flash.option_label_invalid');
             } catch (OptimisticLockException) {
-                $this->addFlash('error', 'This attribute changed elsewhere. Reload before editing options.');
+                $this->addFlash('error', 'flash.attribute_changed');
             }
         }
         return $this->redirectToRoute('app_attributes_edit', ['id' => $definition->getId()]);
@@ -226,16 +226,16 @@ final class AttributeLibraryController extends AbstractController
         $option = $this->ownedOption($definition, $optionId);
         $label = $request->request->get('label');
         if (!is_string($label) || mb_strlen(trim($label)) > 255) {
-            $this->addFlash('error', 'Enter an option label of at most 255 characters.');
+            $this->addFlash('error', 'flash.option_label_length');
         } else {
             try {
                 $definition->renameOption($option, $label);
                 $em->flush();
-                $this->addFlash('success', 'Option renamed.');
+                $this->addFlash('success', 'flash.option_renamed');
             } catch (\InvalidArgumentException|UniqueConstraintViolationException) {
-                $this->addFlash('error', 'Option label already exists or is invalid.');
+                $this->addFlash('error', 'flash.option_label_invalid');
             } catch (OptimisticLockException) {
-                $this->addFlash('error', 'This attribute changed elsewhere. Reload before editing options.');
+                $this->addFlash('error', 'flash.attribute_changed');
             }
         }
         return $this->redirectToRoute('app_attributes_edit', ['id' => $definition->getId()]);
@@ -249,16 +249,16 @@ final class AttributeLibraryController extends AbstractController
         }
         $option = $this->ownedOption($definition, $optionId);
         if ($definitions->isOptionReferenced($option)) {
-            $this->addFlash('error', 'This option is in use and cannot be removed.');
+            $this->addFlash('error', 'flash.option_in_use');
         } else {
             try {
                 $definition->removeOption($option);
                 $em->flush();
-                $this->addFlash('success', 'Option removed.');
+                $this->addFlash('success', 'flash.option_removed');
             } catch (ForeignKeyConstraintViolationException) {
-                $this->addFlash('error', 'This option is in use and cannot be removed.');
+                $this->addFlash('error', 'flash.option_in_use');
             } catch (OptimisticLockException) {
-                $this->addFlash('error', 'This attribute changed elsewhere. Reload before editing options.');
+                $this->addFlash('error', 'flash.attribute_changed');
             }
         }
         return $this->redirectToRoute('app_attributes_edit', ['id' => $definition->getId()]);

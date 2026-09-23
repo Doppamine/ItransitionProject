@@ -18,8 +18,21 @@ final class ProfileValueMapper
             AttributeType::PERIOD => $this->period($value, $input),
             AttributeType::BOOLEAN => $this->boolean($value, $input),
             AttributeType::SELECT => $this->option($value, $input),
-            AttributeType::IMAGE => throw new \InvalidArgumentException('Image upload is not available yet.'),
+            AttributeType::IMAGE => $this->clearImage($value, $input),
         };
+    }
+
+    public function setUploadedImage(ProfileAttributeValue $value, string $verifiedPublicId): void
+    {
+        $value->setImageKey($verifiedPublicId);
+    }
+
+    private function clearImage(ProfileAttributeValue $value, mixed $input): void
+    {
+        if ($input !== '') {
+            throw new \InvalidArgumentException('An image must be uploaded through the signed upload flow.');
+        }
+        $value->clearValue();
     }
 
     private function text(ProfileAttributeValue $value, mixed $input): void

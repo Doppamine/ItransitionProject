@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\RecentAttributeTracker;
 use App\Entity\AttributeCategory;
 use App\Entity\AttributeDefinition;
 use App\Entity\Profile;
@@ -24,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 final class ProfileController extends AbstractController
 {
     #[Route('/profile', name: 'app_profile', methods: ['GET'])]
-    public function index(#[CurrentUser] User $user, Request $request, ProfileRepository $profiles, EntityManagerInterface $entityManager): Response
+    public function index(#[CurrentUser] User $user, Request $request, ProfileRepository $profiles, EntityManagerInterface $entityManager, RecentAttributeTracker $recents): Response
     {
         $profile = $this->profile($profiles, $user);
         $category = $request->query->get('category');
@@ -49,6 +50,7 @@ final class ProfileController extends AbstractController
         }
         array_push($orderedBuiltIns, ...array_values($builtIns));
         usort($optional, static fn ($a, $b): int => strcasecmp($a->getDefinition()->getName(), $b->getDefinition()->getName()));
+        $selectedIds = array_map(static fn ($value): int => (int) $value->getDefinition()->getId(), $profile->getValues());
 
         return $this->render('profile/index.html.twig', [
             'profile' => $profile,
@@ -56,6 +58,7 @@ final class ProfileController extends AbstractController
             'optional' => $optional,
             'categories' => $entityManager->getRepository(AttributeCategory::class)->findBy([], ['name' => 'ASC']),
             'available' => $profiles->searchAvailable($profile, $query, $categoryId),
+            'recent' => array_values(array_filter($recents->list(), static fn (array $row): bool => !in_array($row['id'], $selectedIds, true))),
             'query' => $query,
             'categoryId' => $categoryId,
         ]);
@@ -108,7 +111,7 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('/profile/attributes/{id}/select', name: 'app_profile_select', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function select(#[CurrentUser] User $user, AttributeDefinition $definition, Request $request, ProfileRepository $profiles, EntityManagerInterface $entityManager): Response
+    public function select(#[CurrentUser] User $user, AttributeDefinition $definition, Request $request, ProfileRepository $profiles, EntityManagerInterface $entityManager, RecentAttributeTracker $recents): Response
     {
         $token = $request->request->all()['_token'] ?? null;
         if (!is_string($token) || !$this->isCsrfTokenValid('profile', $token)) {
@@ -120,6 +123,7 @@ final class ProfileController extends AbstractController
 
         $this->profile($profiles, $user)->selectAttribute($definition);
         $entityManager->flush();
+        $recents->record((int) $definition->getId());
         return new RedirectResponse('/profile#info');
     }
 

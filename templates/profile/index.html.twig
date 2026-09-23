@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}My Profile · Itransition Project{% endblock %}
+{% block title %}{{ 'ui.your_profile'|trans }} · Itransition Project{% endblock %}
 
 {% block body %}
 <main class="container py-4 py-lg-5 profile-page"
@@ -8,30 +8,31 @@
       data-profile-autosave-url-value="{{ path('app_profile_autosave') }}"
       data-profile-autosave-version-value="{{ profile.version }}"
       data-profile-autosave-token-value="{{ csrf_token('profile') }}"
+      data-profile-autosave-messages-value="{{ {dirty: 'autosave.dirty'|trans, saving: 'autosave.saving'|trans, saved: 'autosave.saved'|trans, conflict: 'autosave.conflict'|trans, wait: 'autosave.wait'|trans, invalid: 'autosave.invalid'|trans}|json_encode|e('html_attr') }}"
       data-action="input->profile-autosave#changed change->profile-autosave#changed">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
         <div>
-            <p class="text-uppercase small fw-semibold text-primary mb-1">Candidate workspace</p>
-            <h1 class="display-6 fw-semibold mb-1">Your profile</h1>
-            <p class="text-body-secondary mb-0">Keep your details current. Edits save automatically every seven seconds.</p>
+            <p class="text-uppercase small fw-semibold text-primary mb-1">{{ 'ui.candidate_workspace'|trans }}</p>
+            <h1 class="display-6 fw-semibold mb-1">{{ 'ui.your_profile'|trans }}</h1>
+            <p class="text-body-secondary mb-0">{{ 'ui.profile_autosave_hint'|trans }}</p>
         </div>
-        <div class="profile-save-state" role="status" aria-live="polite" data-profile-autosave-target="status">Saved</div>
+        <div class="profile-save-state" role="status" aria-live="polite" data-profile-autosave-target="status">{{ 'ui.saved'|trans }}</div>
     </div>
 
-    <nav class="nav nav-pills gap-2 mb-4" aria-label="Profile sections">
-        <a class="nav-link" href="#me">Me</a>
-        <a class="nav-link" href="#info">Info</a>
-        <a class="nav-link" href="{{ path('app_projects_index') }}" data-action="click->profile-autosave#guardNavigation">Projects</a>
+    <nav class="nav nav-pills gap-2 mb-4" aria-label="{{ 'dynamic.profile_sections'|trans }}">
+        <a class="nav-link" href="#me">{{ 'ui.me'|trans }}</a>
+        <a class="nav-link" href="#info">{{ 'ui.info'|trans }}</a>
+        <a class="nav-link" href="{{ path('app_projects_index') }}" data-action="click->profile-autosave#guardNavigation">{{ 'ui.projects'|trans }}</a>
     </nav>
 
     <section id="me" class="card shadow-sm border-0 mb-4" aria-labelledby="me-heading">
         <div class="card-body p-4 p-lg-5">
-            <h2 id="me-heading" class="h4 mb-1">Me</h2>
-            <p class="text-body-secondary mb-4">The essential details that identify you.</p>
+            <h2 id="me-heading" class="h4 mb-1">{{ 'ui.me'|trans }}</h2>
+            <p class="text-body-secondary mb-4">{{ 'ui.essential_details'|trans }}</p>
             <div class="row g-4">
                 {% for value in builtIns %}
                     <div class="col-12 {{ value.definition.type.value == 'image' ? '' : 'col-md-6' }}">
-                        {% include 'profile/_editor.html.twig' with {value: value} only %}
+                        {% include 'profile/_editor.html.twig' with {value: value, imageScope: 'profile', imageTargetId: 0} only %}
                     </div>
                 {% endfor %}
             </div>
@@ -40,44 +41,51 @@
 
     <section id="info" class="card shadow-sm border-0" aria-labelledby="info-heading">
         <div class="card-body p-4 p-lg-5">
-            <h2 id="info-heading" class="h4 mb-1">Info</h2>
-            <p class="text-body-secondary mb-4">Choose the details that help describe your experience.</p>
+            <h2 id="info-heading" class="h4 mb-1">{{ 'ui.info'|trans }}</h2>
+            <p class="text-body-secondary mb-4">{{ 'ui.choose_details'|trans }}</p>
 
             {% if optional is not empty %}
                 <div class="row g-4 mb-5">
                     {% for value in optional %}
                         <div class="col-12 col-lg-6">
                             <div class="profile-optional-editor h-100">
-                                {% include 'profile/_editor.html.twig' with {value: value} only %}
+                                {% include 'profile/_editor.html.twig' with {value: value, imageScope: 'profile', imageTargetId: 0} only %}
                                 <form method="post" action="{{ path('app_profile_remove', {id: value.definition.id}) }}" data-action="submit->profile-autosave#guardNavigation">
                                     <input type="hidden" name="_token" value="{{ csrf_token('profile') }}">
-                                    <button type="submit" class="btn btn-link btn-sm text-danger px-0 mt-2">Remove attribute</button>
+                                    <button type="submit" class="btn btn-link btn-sm text-danger px-0 mt-2">{{ 'ui.remove_attribute'|trans }}</button>
                                 </form>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="profile-empty mb-5">No extra details yet. Find an attribute below to add one.</p>
+                <p class="profile-empty mb-5">{{ 'ui.no_extra_details'|trans }}</p>
             {% endif %}
 
             <div class="border-top pt-4">
-                <h3 class="h5 mb-3">Add an attribute</h3>
+                <h3 class="h5 mb-3">{{ 'ui.add_attribute'|trans }}</h3>
+                {% if recent %}
+                    <div class="mb-3" id="recent-attributes"><h4 class="h6">{{ 'attributes.recent'|trans }}</h4><div class="d-flex flex-wrap gap-2">
+                        {% for attribute in recent %}
+                            <form method="post" action="{{ path('app_profile_select', {id: attribute.id}) }}" data-action="submit->profile-autosave#guardNavigation"><input type="hidden" name="_token" value="{{ csrf_token('profile') }}"><button class="btn btn-outline-secondary btn-sm" type="submit">{{ attribute.name }}</button></form>
+                        {% endfor %}
+                    </div></div>
+                {% endif %}
                 <form method="get" action="{{ path('app_profile') }}#info" class="row g-2 align-items-end mb-3" data-action="submit->profile-autosave#guardNavigation">
                     <div class="col-12 col-md-6">
-                        <label class="form-label" for="attribute-search">Search by name</label>
-                        <input id="attribute-search" name="q" class="form-control" value="{{ query }}" maxlength="100" placeholder="Start of attribute name">
+                        <label class="form-label" for="attribute-search">{{ 'ui.search_by_name'|trans }}</label>
+                        <input id="attribute-search" name="q" class="form-control" value="{{ query }}" maxlength="100" placeholder="{{ 'dynamic.attribute_prefix_placeholder'|trans }}">
                     </div>
                     <div class="col-12 col-md-4">
-                        <label class="form-label" for="attribute-category">Category</label>
+                        <label class="form-label" for="attribute-category">{{ 'ui.category'|trans }}</label>
                         <select id="attribute-category" name="category" class="form-select">
-                            <option value="">All categories</option>
+                            <option value="">{{ 'ui.all_categories'|trans }}</option>
                             {% for category in categories %}
                                 <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' : '' }}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-12 col-md-2 d-grid"><button class="btn btn-outline-primary" type="submit">Find</button></div>
+                    <div class="col-12 col-md-2 d-grid"><button class="btn btn-outline-primary" type="submit">{{ 'ui.find'|trans }}</button></div>
                 </form>
                 <div id="attribute-results" class="list-group list-group-flush border rounded-3 overflow-hidden">
                     {% for attribute in available %}
@@ -85,14 +93,14 @@
                             <div><strong>{{ attribute.name }}</strong><span class="text-body-secondary small ms-2">{{ attribute.category }}</span></div>
                             <form method="post" action="{{ path('app_profile_select', {id: attribute.id}) }}" data-action="submit->profile-autosave#guardNavigation">
                                 <input type="hidden" name="_token" value="{{ csrf_token('profile') }}">
-                                <button type="submit" class="btn btn-outline-primary btn-sm">Add</button>
+                                <button type="submit" class="btn btn-outline-primary btn-sm">{{ 'ui.add'|trans }}</button>
                             </form>
                         </div>
                     {% else %}
-                        <p class="text-body-secondary p-3 mb-0">No available attributes match this search.</p>
+                        <p class="text-body-secondary p-3 mb-0">{{ 'ui.no_available_attributes'|trans }}</p>
                     {% endfor %}
                 </div>
-                <p class="small text-body-secondary mt-3 mb-0">Showing up to 20 available attributes.</p>
+                <p class="small text-body-secondary mt-3 mb-0">{{ 'ui.available_attributes_limit'|trans }}</p>
             </div>
         </div>
     </section>

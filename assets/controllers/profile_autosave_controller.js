@@ -2,7 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ['status'];
-    static values = { url: String, version: Number, token: String };
+    static values = { url: String, version: Number, token: String, messages: Object };
 
     connect() {
         this.dirty = new Map();
@@ -21,13 +21,13 @@ export default class extends Controller {
         if (!editor || !event.target.matches('[data-profile-part]')) return;
         this.dirty.set(editor.dataset.definitionId, this.readValue(editor));
         editor.querySelector('[data-profile-error]').textContent = '';
-        this.show('dirty', 'Unsaved changes');
+        this.show('dirty', this.messagesValue.dirty);
     }
 
     guardNavigation(event) {
         if (this.conflict || this.saving || this.dirty.size > 0) {
             event.preventDefault();
-            this.show(this.conflict ? 'conflict' : 'dirty', this.conflict ? 'Profile changed elsewhere. Reload to continue.' : 'Unsaved changes — wait for save');
+            this.show(this.conflict ? 'conflict' : 'dirty', this.conflict ? this.messagesValue.conflict : this.messagesValue.wait);
         }
     }
 
@@ -41,7 +41,7 @@ export default class extends Controller {
         if (this.saving || this.conflict || this.dirty.size === 0) return;
         const sent = new Map(this.dirty);
         this.saving = true;
-        this.show('saving', 'Saving…');
+        this.show('saving', this.messagesValue.saving);
 
         try {
             const response = await fetch(this.urlValue, {
@@ -53,15 +53,15 @@ export default class extends Controller {
             const result = await response.json();
             if (response.status === 409) {
                 this.conflict = true;
-                this.show('conflict', 'Profile changed elsewhere. Reload to continue.');
+                this.show('conflict', this.messagesValue.conflict);
                 return;
             }
             if (response.status === 422) {
                 if (result.field) {
                     const editor = [...this.element.querySelectorAll('[data-definition-id]')].find((item) => item.dataset.definitionId === result.field);
-                    if (editor) editor.querySelector('[data-profile-error]').textContent = 'Check this value and try again.';
+                    if (editor) editor.querySelector('[data-profile-error]').textContent = this.messagesValue.invalid;
                 }
-                this.show('dirty', 'Unsaved changes');
+                this.show('dirty', this.messagesValue.dirty);
                 return;
             }
             if (!response.ok) throw new Error('Save failed');
@@ -70,9 +70,9 @@ export default class extends Controller {
             for (const [id, value] of sent) {
                 if (JSON.stringify(this.dirty.get(id)) === JSON.stringify(value)) this.dirty.delete(id);
             }
-            this.show(this.dirty.size ? 'dirty' : 'saved', this.dirty.size ? 'Unsaved changes' : 'Saved');
+            this.show(this.dirty.size ? 'dirty' : 'saved', this.dirty.size ? this.messagesValue.dirty : this.messagesValue.saved);
         } catch (_error) {
-            this.show('dirty', 'Unsaved changes');
+            this.show('dirty', this.messagesValue.dirty);
         } finally {
             this.saving = false;
         }

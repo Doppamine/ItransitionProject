@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ project ? 'Edit project' : 'New project' }} · Itransition Project{% endblock %}
+{% block title %}{{ (project ? 'dynamic.edit_project' : 'dynamic.new_project')|trans }} · Itransition Project{% endblock %}
 
 {% block body %}
 <main class="container py-4 py-lg-5">
-    <a href="{{ path('app_projects_index') }}" class="d-inline-block mb-3">← Projects</a>
-    <h1 class="h2 mb-4">{{ project ? 'Edit project' : 'New project' }}</h1>
+    <a href="{{ path('app_projects_index') }}" class="d-inline-block mb-3">{{ 'ui.back_projects'|trans }}</a>
+    <h1 class="h2 mb-4">{{ (project ? 'dynamic.edit_project' : 'dynamic.new_project')|trans }}</h1>
     <div class="card"><div class="card-body">
         {{ form_start(form) }}
         {{ form_errors(form) }}
@@ -18,12 +18,12 @@
                 {{ form_label(form.tags) }}
                 {{ form_widget(form.tags, {attr: {'data-project-tags-target': 'input', 'data-action': 'input->project-tags#suggest keydown->project-tags#keyDown'}}) }}
                 {{ form_errors(form.tags) }}
-                <div class="form-text">Separate tags with commas. Existing tags appear as suggestions; new tags are saved with this project.</div>
+                <div class="form-text">{{ 'ui.project_tags_hint'|trans }}</div>
                 <div class="mt-2" data-project-tags-target="selected" aria-live="polite"></div>
                 <div class="list-group mt-1" data-project-tags-target="suggestions"></div>
             </div>
         </div>
-        <button class="btn btn-primary mt-4" type="submit">Save project</button>
+        <button class="btn btn-primary mt-4" type="submit">{{ 'ui.save_project'|trans }}</button>
         {{ form_end(form) }}
     </div></div>
 </main>

@@ -18,21 +18,21 @@ final class AttributeDefinitionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class, ['label' => 'Name', 'disabled' => $options['built_in'], 'attr' => ['maxlength' => 255]])
-            ->add('category', ChoiceType::class, ['label' => 'Category', 'choices' => $options['categories']])
-            ->add('description', TextareaType::class, ['label' => 'Description', 'required' => false])
+            ->add('name', TextType::class, ['label' => 'ui.name', 'disabled' => $options['built_in'], 'attr' => ['maxlength' => 255]])
+            ->add('category', ChoiceType::class, ['label' => 'ui.category', 'choices' => $options['categories'], 'choice_translation_domain' => false])
+            ->add('description', TextareaType::class, ['label' => 'form.description', 'required' => false])
             ->add('type', ChoiceType::class, [
-                'label' => 'Type',
+                'label' => 'ui.type',
                 'disabled' => $options['type_fixed'],
                 'choices' => [
-                    'String' => AttributeType::STRING->value,
-                    'Text' => AttributeType::TEXT->value,
-                    'Image' => AttributeType::IMAGE->value,
-                    'Numeric' => AttributeType::NUMERIC->value,
-                    'Date' => AttributeType::DATE->value,
-                    'Period' => AttributeType::PERIOD->value,
-                    'Boolean' => AttributeType::BOOLEAN->value,
-                    'One-of-many / Select' => AttributeType::SELECT->value,
+                    'enum.type.string' => AttributeType::STRING->value,
+                    'enum.type.text' => AttributeType::TEXT->value,
+                    'enum.type.image' => AttributeType::IMAGE->value,
+                    'enum.type.numeric' => AttributeType::NUMERIC->value,
+                    'enum.type.date' => AttributeType::DATE->value,
+                    'enum.type.period' => AttributeType::PERIOD->value,
+                    'enum.type.boolean' => AttributeType::BOOLEAN->value,
+                    'enum.type.select' => AttributeType::SELECT->value,
                 ],
             ]);
         if ($options['editing']) {

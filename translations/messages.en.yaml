@@ -1,0 +1,316 @@
+nav:
+    main: 'Main navigation'
+    search: Search
+    search_placeholder: 'Search positions and CVs'
+    positions: Positions
+    profile: Profile
+    projects: Projects
+    cvs: CVs
+    attributes: 'Attribute Library'
+    users: Users
+    logout: Logout
+    login: Login
+preferences:
+    language: Language
+    theme: Theme
+    light: Light
+    dark: Dark
+    apply: Apply
+common:
+    remove: Remove
+    find: Find
+    'yes': 'Yes'
+    'no': 'No'
+    position: Position
+    access: Access
+    updated: Updated
+home:
+    title: 'Main Page'
+    intro: 'Explore current Positions and activity.'
+    latest: 'Latest Positions'
+    popular: 'Most Popular Positions'
+    submitted_cvs: 'Submitted CVs'
+    no_positions: 'No Positions are available.'
+    tags: 'Technology Tag Cloud'
+    no_tags: 'No technology tags are available.'
+    statistics: Statistics
+    cvs_24h: 'CVs created in 24 hours'
+    total_positions: 'Total Positions'
+    candidates: Candidates
+    recruiters: Recruiters
+auth:
+    sign_in: 'Sign in'
+    choose_provider: 'Choose a provider to continue.'
+    error: 'Social sign-in could not be completed. Please try again.'
+    google: 'Continue with Google'
+    github: 'Continue with GitHub'
+image:
+    unavailable: Image preview is unavailable.
+    hint: 'Drop an image here or choose a file (JPEG, PNG, WebP or GIF; up to 5 MB).'
+    choose: 'Choose image'
+    progress: 'Image upload progress'
+    upload_failed: 'Image upload failed. Check the file and try again.'
+attributes:
+    recent: 'Recently used attributes'
+    all: 'All attributes'
+admin:
+    users: Users
+    email_prefix: 'Email prefix'
+    actions: 'Actions for selected users'
+    action: Action
+    choose_action: 'Choose an action'
+    block: Block
+    unblock: Unblock
+    delete: Delete
+    add_candidate: 'Add Candidate role'
+    remove_candidate: 'Remove Candidate role'
+    add_recruiter: 'Add Recruiter role'
+    remove_recruiter: 'Remove Recruiter role'
+    add_admin: 'Add Administrator role'
+    remove_admin: 'Remove Administrator role'
+    apply: 'Apply to selected'
+    select: Select
+    select_user: 'Select %email%'
+    email: Email
+    roles: Roles
+    blocked: Blocked
+    created: Created
+    empty: 'No users match this search.'
+    limit: 'Showing up to 100 users.'
+    role:
+        ROLE_CANDIDATE: Candidate
+        ROLE_RECRUITER: Recruiter
+        ROLE_ADMIN: Administrator
+ui:
+    access_rules_lower: 'Access rules'
+    back_attributes: '← Attribute Library'
+    back_edit_position: '← Edit position'
+    back_main: '← Main Page'
+    back_position: '← Position'
+    back_positions: '← Positions'
+    back_profile: '← Profile'
+    back_projects: '← Projects'
+    access: Access
+    access_rules: 'Access Rules'
+    actions: Actions
+    add: Add
+    add_access_rule: 'Add Access Rule'
+    add_attribute: 'Add an attribute'
+    add_option: 'Add option'
+    add_project: 'Add project'
+    add_rule: 'Add rule'
+    all_categories: 'All categories'
+    all_types: 'All types'
+    attribute: Attribute
+    attribute_library: 'Attribute Library'
+    attribute_colon: 'Attribute:'
+    attributes: Attributes
+    available_cv_templates: 'Available CV templates.'
+    browse_positions: 'Browse positions'
+    built_in: 'Built in'
+    built_in_fixed: 'Built-in names and types are fixed.'
+    candidate: Candidate
+    candidate_cv: 'Candidate CV'
+    candidate_profile: 'Candidate profile'
+    candidate_workspace: 'Candidate workspace'
+    category: Category
+    choose_rule_attribute: 'Choose an Access Rule attribute'
+    choose_attribute: 'Choose an attribute'
+    choose_details: 'Choose the details that help describe your experience.'
+    continue: Continue
+    create_cv: 'Create CV'
+    created: Created
+    cvs: CVs
+    dashboard: Dashboard
+    delete: Delete
+    delete_attribute: 'Delete attribute'
+    delete_position: 'Delete position'
+    discussion: Discussion
+    discussion_unavailable: 'Discussion is unavailable for this Position.'
+    duplicate_position: 'Duplicate position'
+    edit: Edit
+    edit_position: 'Edit position'
+    cv_autosave_hint: 'Edits update your Profile and save together every seven seconds.'
+    end: End
+    search_prompt: 'Enter a search term to find Positions.'
+    find: Find
+    identity_contact: 'Identity and contact'
+    info: Info
+    profile_autosave_hint: 'Keep your details current. Edits save automatically every seven seconds.'
+    likes: Likes
+    markdown_hint: 'Markdown is supported. Posts cannot be edited or deleted.'
+    maximum_projects: 'Maximum projects:'
+    me: Me
+    missing: Missing
+    missing_value: 'Missing value'
+    my_cvs: 'My CVs'
+    name: Name
+    name_starts_with: 'Name starts with'
+    new_access_rule: 'New Access Rule'
+    new_attribute: 'New attribute'
+    new_position: 'New position'
+    new_post: 'New post'
+    'no': 'No'
+    no_access_rules: 'No Access Rules.'
+    no_access_rules_restricted: 'No Access Rules. A restricted Position with no rules is unavailable to Candidates.'
+    no_accessible_cvs: 'No accessible CVs yet.'
+    no_additional_attributes: 'No additional Position attributes.'
+    no_attributes_selected: 'No attributes selected.'
+    no_available_attributes: 'No available attributes match this search.'
+    no_cvs_for_tag: 'No CVs are available for this tag.'
+    no_extra_details: 'No extra details yet. Find an attribute below to add one.'
+    no_matching_attributes: 'No matching attributes.'
+    no_matching_cvs: 'No matching CVs are available.'
+    no_matching_positions: 'No matching Positions are available.'
+    no_matching_projects: 'No matching projects.'
+    no_options: 'No options yet.'
+    no_positions_for_tag: 'No Positions are available for this tag.'
+    no_positions: 'No Positions are available.'
+    no_projects_shared: 'No projects shared.'
+    no_projects: 'No projects yet. Add one to show your work.'
+    no_project_tags: 'No relevant Project Tags.'
+    no_relevant_tags: 'No relevant tags.'
+    no_template_attributes: 'No template attributes.'
+    no_visible_cvs: 'No visible CVs for this position.'
+    not_set: 'Not set'
+    open: Open
+    open_cv: 'Open CV'
+    order: Order
+    position: Position
+    position_details: 'Position details'
+    positions: Positions
+    post: Post
+    project_limit: 'Project limit'
+    projects: Projects
+    publish_cv: 'Publish CV'
+    relevant_project_tags: 'Relevant Project Tags'
+    relevant_projects: 'Relevant projects'
+    remove: Remove
+    remove_all_options: 'Remove all options before changing this type.'
+    remove_attribute: 'Remove attribute'
+    rename: Rename
+    save_attribute: 'Save attribute'
+    save_position: 'Save position'
+    save_project: 'Save project'
+    saved: Saved
+    search: Search
+    search_by_name: 'Search by name'
+    select_options: 'Select options'
+    project_tags_hint: 'Separate tags with commas. Existing tags appear as suggestions; new tags are saved with this project.'
+    shared_definitions: 'Shared definitions for Candidate profiles.'
+    attributes_limit: 'Showing up to 100 attributes. Narrow your search to find more.'
+    positions_limit: 'Showing up to 100 Positions.'
+    available_attributes_limit: 'Showing up to 20 available attributes.'
+    sign_in: 'Sign in'
+    start: Start
+    status: Status
+    tags_limit: 'Suggestions are bounded to 100 existing global Tags.'
+    template_attributes: 'Template attributes'
+    essential_details: 'The essential details that identify you.'
+    attribute_type_fixed: 'This attribute is used by a Profile or Position. Its type is fixed.'
+    title: Title
+    discussion_join_suffix: 'to join the Discussion.'
+    type: Type
+    updated: Updated
+    usage: Usage
+    'yes': 'Yes'
+    your_profile: 'Your profile'
+    your_projects: 'Your projects'
+enum:
+    access:
+        public: Public
+        restricted: Restricted
+    cv_status:
+        DRAFT: Draft
+        PUBLISHED: Published
+    type:
+        string: String
+        text: Text
+        image: Image
+        numeric: Numeric
+        date: Date
+        period: Period
+        boolean: Boolean
+        select: One-of-many / Select
+    operator:
+        equal: Equals
+        not_equal: Does not equal
+        greater_than: Greater than
+        greater_than_or_equal: Greater than or equal
+        less_than: Less than
+        less_than_or_equal: Less than or equal
+form:
+    short_description: Short description
+    maximum_projects: Maximum projects
+    project_name: Project name
+    start_date: Start date
+    end_date: End date
+    description_markdown: Description (Markdown)
+    technology_tags: Technology tags
+    description: Description
+    expected_value: Expected value
+    expected_number: Expected number
+    expected_date: Expected date
+    expected_start: Expected start
+    expected_end: Expected end
+    expected_option: Expected option
+    operator: Operator
+dynamic:
+    edit_attribute: Edit attribute
+    used_count: 'Used (%count%)'
+    unused: Unused
+    edit_project: Edit project
+    new_project: New project
+    search_results: 'Results for “%query%”'
+    cvs_for: 'CVs for %position%'
+    cv_for: 'CV for %position%'
+    signed_in_as: 'Signed in as %email%.'
+    roles: 'Roles: %roles%'
+    like: like
+    likes: likes
+    present: Present
+    markdown_placeholder: Markdown text
+    decimal_placeholder: e.g. 12.5
+    attribute_prefix_placeholder: Start of attribute name
+    existing_tag_placeholder: Existing tag
+    sort_order: Sort order
+    new_option_label: New option label
+    option_label: Option label
+    profile_sections: Profile sections
+    delete_project_confirm: Delete this project?
+    delete_position_confirm: Delete this Position?
+    delete_attribute_confirm: Delete this attribute and its profile values?
+    yes: 'Yes'
+    no: 'No'
+flash:
+    attribute_already_selected: This attribute is already selected.
+    tag_already_selected: This Project Tag is already selected.
+    option_label_length: Enter an option label of at most 255 characters.
+    option_label_invalid: Option label already exists or is invalid.
+    attribute_changed: This attribute changed elsewhere. Reload before editing options.
+    option_in_use: This option is in use and cannot be removed.
+    admin_self: You cannot block or delete your current account.
+    admin_updated: Selected users updated.
+    project_created: Project created.
+    project_saved: Project saved.
+    project_deleted: Project deleted.
+    position_created: Position created.
+    position_saved: Position saved.
+    position_duplicated: Position duplicated.
+    position_deleted: Position deleted.
+    template_attribute_added: Template attribute added.
+    project_tag_added: Project Tag added.
+    access_rule_added: Access Rule added.
+    attribute_created: Attribute created.
+    attribute_saved: Attribute saved.
+    attribute_deleted: Attribute deleted.
+    option_added: Option added.
+    option_renamed: Option renamed.
+    option_removed: Option removed.
+autosave:
+    dirty: Unsaved changes
+    saving: Saving…
+    saved: Saved
+    conflict: Profile changed elsewhere. Reload to continue.
+    wait: Unsaved changes — wait for save
+    invalid: Check this value and try again.

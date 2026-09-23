@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard · Itransition Project{% endblock %}
+{% block title %}{{ 'ui.dashboard'|trans }} · Itransition Project{% endblock %}
 
 {% block body %}
     <main class="container py-5">
-        <h1 class="h3">Dashboard</h1>
-        <p>Signed in as {{ user.email }}.</p>
-        <p class="text-body-secondary mb-0">Roles: {{ user.roles|join(', ') }}</p>
+        <h1 class="h3">{{ 'ui.dashboard'|trans }}</h1>
+        <p>{{ 'dynamic.signed_in_as'|trans({'%email%': user.email}) }}</p>
+        <p class="text-body-secondary mb-0">{{ 'dynamic.roles'|trans({'%roles%': user.roles|join(', ')}) }}</p>
     </main>
 {% endblock %}

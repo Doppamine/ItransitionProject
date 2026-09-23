@@ -19,10 +19,10 @@ final class PositionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('title', TextType::class, ['attr' => ['maxlength' => 255]])
-            ->add('shortDescription', TextareaType::class, ['label' => 'Short description', 'required' => false, 'attr' => ['maxlength' => 2000, 'rows' => 4]])
-            ->add('accessType', ChoiceType::class, ['label' => 'Access', 'choices' => ['Public' => PositionAccessType::PUBLIC->value, 'Restricted' => PositionAccessType::RESTRICTED->value]])
-            ->add('maxProjects', IntegerType::class, ['label' => 'Maximum projects', 'attr' => ['min' => 0]]);
+            ->add('title', TextType::class, ['label' => 'ui.title', 'attr' => ['maxlength' => 255]])
+            ->add('shortDescription', TextareaType::class, ['label' => 'form.short_description', 'required' => false, 'attr' => ['maxlength' => 2000, 'rows' => 4]])
+            ->add('accessType', ChoiceType::class, ['label' => 'ui.access', 'choices' => ['enum.access.public' => PositionAccessType::PUBLIC->value, 'enum.access.restricted' => PositionAccessType::RESTRICTED->value]])
+            ->add('maxProjects', IntegerType::class, ['label' => 'form.maximum_projects', 'attr' => ['min' => 0]]);
         if ($options['editing']) {
             $builder->add('version', HiddenType::class);
         }

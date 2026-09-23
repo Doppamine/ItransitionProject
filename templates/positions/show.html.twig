@@ -5,20 +5,20 @@
 
 {% block body %}
 <main class="container py-4 py-lg-5">
-    <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">← Positions</a>
+    <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">{{ 'ui.back_positions'|trans }}</a>
     <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-        <div><h1 class="h2 mb-2">{{ position.title }}</h1><span class="badge text-bg-{{ position.accessType.value == 'public' ? 'success' : 'secondary' }}">{{ position.accessType.value|capitalize }}</span></div>
+        <div><h1 class="h2 mb-2">{{ position.title }}</h1><span class="badge text-bg-{{ position.accessType.value == 'public' ? 'success' : 'secondary' }}">{{ ('enum.access.' ~ position.accessType.value)|trans }}</span></div>
         <div class="d-flex gap-2">
             {% if manager %}
-                <a class="btn btn-outline-primary" href="{{ path('app_positions_edit', {id: position.id}) }}">Edit position</a>
-                <a class="btn btn-primary" href="{{ path('app_position_cvs', {id: position.id}) }}">CVs</a>
+                <a class="btn btn-outline-primary" href="{{ path('app_positions_edit', {id: position.id}) }}">{{ 'ui.edit_position'|trans }}</a>
+                <a class="btn btn-primary" href="{{ path('app_position_cvs', {id: position.id}) }}">{{ 'ui.cvs'|trans }}</a>
             {% elseif candidateEligible %}
                 {% if cv %}
-                    <a class="btn btn-primary" href="{{ path('app_cv_show', {id: cv.id}) }}">Open CV</a>
+                    <a class="btn btn-primary" href="{{ path('app_cv_show', {id: cv.id}) }}">{{ 'ui.open_cv'|trans }}</a>
                 {% else %}
                     <form method="post" action="{{ path('app_cv_create', {id: position.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('cv_create_' ~ position.id) }}">
-                        <button class="btn btn-primary" type="submit">Create CV</button>
+                        <button class="btn btn-primary" type="submit">{{ 'ui.create_cv'|trans }}</button>
                     </form>
                 {% endif %}
             {% endif %}
@@ -26,33 +26,33 @@
     </div>
     {% if position.shortDescription %}<p class="lead">{{ position.shortDescription }}</p>{% endif %}
     <div class="row g-4">
-        <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">Template attributes</h2>
-            <ol class="mb-0">{% for item in position.attributes %}<li>{{ item.definition.name }}</li>{% else %}<li class="text-body-secondary">No attributes selected.</li>{% endfor %}</ol>
+        <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">{{ 'ui.template_attributes'|trans }}</h2>
+            <ol class="mb-0">{% for item in position.attributes %}<li>{{ item.definition.name }}</li>{% else %}<li class="text-body-secondary">{{ 'ui.no_attributes_selected'|trans }}</li>{% endfor %}</ol>
         </div></div></section>
-        <section class="col-lg-5"><div class="card h-100"><div class="card-body"><h2 class="h5">Projects</h2><p>Maximum projects: <strong>{{ position.maxProjects }}</strong></p>
-            <div>{% for tag in position.projectTags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% else %}<span class="text-body-secondary">No relevant Project Tags.</span>{% endfor %}</div>
+        <section class="col-lg-5"><div class="card h-100"><div class="card-body"><h2 class="h5">{{ 'ui.projects'|trans }}</h2><p>{{ 'ui.maximum_projects'|trans }} <strong>{{ position.maxProjects }}</strong></p>
+            <div>{% for tag in position.projectTags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% else %}<span class="text-body-secondary">{{ 'ui.no_project_tags'|trans }}</span>{% endfor %}</div>
         </div></div></section>
     </div>
-    {% if manager %}<section class="card mt-4"><div class="card-body"><h2 class="h5">Access rules</h2>
-        {% for rule in position.accessRules %}<p class="mb-2"><strong>{{ rule.definition.name }}</strong> {{ rule.operator.label }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></p>{% else %}<p class="text-body-secondary mb-0">No Access Rules.</p>{% endfor %}
+    {% if manager %}<section class="card mt-4"><div class="card-body"><h2 class="h5">{{ 'ui.access_rules_lower'|trans }}</h2>
+        {% for rule in position.accessRules %}<p class="mb-2"><strong>{{ rule.definition.name }}</strong> {{ ('enum.operator.' ~ rule.operator.value)|trans }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></p>{% else %}<p class="text-body-secondary mb-0">{{ 'ui.no_access_rules'|trans }}</p>{% endfor %}
     </div></section>{% endif %}
     <section class="card mt-4" id="discussion"><div class="card-body">
-        <h2 class="h5 mb-3">Discussion</h2>
+        <h2 class="h5 mb-3">{{ 'ui.discussion'|trans }}</h2>
         {% if discussionAllowed %}
             <div data-controller="discussion-poll" data-discussion-poll-url-value="{{ path('app_discussion_posts', {id: position.id}) }}">
                 <div data-discussion-poll-target="posts">{% include 'positions/_posts.html.twig' with {posts: discussionPosts} only %}</div>
             </div>
             <form method="post" action="{{ path('app_discussion_create', {id: position.id}) }}" class="mt-3">
                 <input type="hidden" name="_token" value="{{ csrf_token('discussion_post_' ~ position.id) }}">
-                <label for="discussion-content" class="form-label">New post</label>
+                <label for="discussion-content" class="form-label">{{ 'ui.new_post'|trans }}</label>
                 <textarea id="discussion-content" name="content" class="form-control mb-2" rows="4" maxlength="10000" required></textarea>
-                <p class="small text-body-secondary mb-2">Markdown is supported. Posts cannot be edited or deleted.</p>
-                <button type="submit" class="btn btn-primary">Post</button>
+                <p class="small text-body-secondary mb-2">{{ 'ui.markdown_hint'|trans }}</p>
+                <button type="submit" class="btn btn-primary">{{ 'ui.post'|trans }}</button>
             </form>
         {% elseif app.user is null %}
-            <p class="mb-0"><a href="{{ path('app_login') }}">Sign in</a> to join the Discussion.</p>
+            <p class="mb-0"><a href="{{ path('app_login') }}">{{ 'ui.sign_in'|trans }}</a> {{ 'ui.discussion_join_suffix'|trans }}</p>
         {% else %}
-            <p class="text-body-secondary mb-0">Discussion is unavailable for this Position.</p>
+            <p class="text-body-secondary mb-0">{{ 'ui.discussion_unavailable'|trans }}</p>
         {% endif %}
     </div></section>
 </main>

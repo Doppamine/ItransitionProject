@@ -1,6 +1,6 @@
 body {
     min-width: 320px;
-    background: #f5f7fb;
+    background: var(--bs-body-bg);
 }
 
 .profile-page { max-width: 1080px; }
@@ -9,8 +9,9 @@ body {
 .profile-save-state[data-state="dirty"] { background: #fff4df; color: #8b5b00; }
 .profile-save-state[data-state="saving"] { background: #eaf2ff; color: #174e9e; }
 .profile-save-state[data-state="conflict"] { background: #ffe9e8; color: #a51e24; white-space: normal; }
-.profile-empty { background: #f8f9fc; border: 1px dashed #cbd3e0; border-radius: .75rem; padding: 1.5rem; }
-.profile-optional-editor { background: #fafbfe; border: 1px solid #e5e9f1; border-radius: .75rem; padding: 1.25rem; }
-.profile-photo-placeholder { display: flex; align-items: center; gap: 1rem; background: #fafbfe; }
+.profile-empty { background: var(--bs-tertiary-bg); border: 1px dashed var(--bs-border-color); border-radius: .75rem; padding: 1.5rem; }
+.profile-optional-editor { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: .75rem; padding: 1.25rem; }
+.profile-image-upload { background: var(--bs-tertiary-bg); }
+.profile-image-preview { display: block; max-height: 20rem; max-width: 100%; object-fit: contain; }
 .profile-editor .invalid-feedback:not(:empty) { display: block; }
 .discussion-content > :last-child { margin-bottom: 0; }

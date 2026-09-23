@@ -4,7 +4,7 @@
     {% elseif type == 'numeric' %}{{ rule.numericValue }}
     {% elseif type == 'date' %}{{ rule.dateValue|date('Y-m-d') }}
     {% elseif type == 'period' %}{{ rule.periodStart|date('Y-m-d') }} – {{ rule.periodEnd|date('Y-m-d') }}
-    {% elseif type == 'boolean' %}{{ rule.booleanValue ? 'Yes' : 'No' }}
+    {% elseif type == 'boolean' %}{{ (rule.booleanValue ? 'common.yes' : 'common.no')|trans }}
     {% elseif type == 'select' %}{{ rule.option.label }}
     {% endif %}
 {% endmacro %}

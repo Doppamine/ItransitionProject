@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}CV for {{ cv.position.title }} · Itransition Project{% endblock %}
+{% block title %}{{ 'dynamic.cv_for'|trans({'%position%': cv.position.title}) }} · Itransition Project{% endblock %}
 
 {% block body %}
 <main class="container py-4 py-lg-5"
@@ -9,18 +9,19 @@
       data-profile-autosave-url-value="{{ path('app_cv_autosave', {id: cv.id}) }}"
       data-profile-autosave-version-value="{{ view.version }}"
       data-profile-autosave-token-value="{{ csrf_token('cv_edit_' ~ cv.id) }}"
+      data-profile-autosave-messages-value="{{ {dirty: 'autosave.dirty'|trans, saving: 'autosave.saving'|trans, saved: 'autosave.saved'|trans, conflict: 'autosave.conflict'|trans, wait: 'autosave.wait'|trans, invalid: 'autosave.invalid'|trans}|json_encode|e('html_attr') }}"
       data-action="input->profile-autosave#changed change->profile-autosave#changed"
       {% endif %}>
-    <a href="{{ path('app_positions_show', {id: cv.position.id}) }}" class="d-inline-block mb-3" {% if editable %}data-action="click->profile-autosave#guardNavigation"{% endif %}>← Position</a>
+    <a href="{{ path('app_positions_show', {id: cv.position.id}) }}" class="d-inline-block mb-3" {% if editable %}data-action="click->profile-autosave#guardNavigation"{% endif %}>{{ 'ui.back_position'|trans }}</a>
     <header class="border-bottom pb-4 mb-4">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div><p class="small text-uppercase text-primary fw-semibold mb-1">Candidate CV</p><h1 class="display-6 fw-semibold mb-2">{{ cv.position.title }}</h1><span class="badge text-bg-{{ cv.status.value == 'PUBLISHED' ? 'success' : 'secondary' }}">{{ cv.status.value|capitalize }}</span><p class="text-body-secondary mt-2 mb-0">{{ likeCount }} {{ likeCount == 1 ? 'like' : 'likes' }}</p></div>
+            <div><p class="small text-uppercase text-primary fw-semibold mb-1">{{ 'ui.candidate_cv'|trans }}</p><h1 class="display-6 fw-semibold mb-2">{{ cv.position.title }}</h1><span class="badge text-bg-{{ cv.status.value == 'PUBLISHED' ? 'success' : 'secondary' }}">{{ ('enum.cv_status.' ~ cv.status.value)|trans }}</span><p class="text-body-secondary mt-2 mb-0">{{ likeCount }} {{ (likeCount == 1 ? 'dynamic.like' : 'dynamic.likes')|trans }}</p></div>
             <div class="d-flex flex-column align-items-end gap-2">
-                {% if editable %}<div class="profile-save-state" role="status" aria-live="polite" data-profile-autosave-target="status">Saved</div>{% endif %}
+                {% if editable %}<div class="profile-save-state" role="status" aria-live="polite" data-profile-autosave-target="status">{{ 'ui.saved'|trans }}</div>{% endif %}
                 {% if publishable %}
                     <form method="post" action="{{ path('app_cv_publish', {id: cv.id}) }}" {% if editable %}data-action="submit->profile-autosave#guardNavigation"{% endif %}>
                         <input type="hidden" name="_token" value="{{ csrf_token('cv_publish_' ~ cv.id) }}">
-                        <button type="submit" class="btn btn-primary">Publish CV</button>
+                        <button type="submit" class="btn btn-primary">{{ 'ui.publish_cv'|trans }}</button>
                     </form>
                 {% endif %}
                 {% if canLike %}
@@ -31,22 +32,22 @@
                 {% endif %}
             </div>
         </div>
-        {% if editable %}<p class="text-body-secondary mt-3 mb-0">Edits update your Profile and save together every seven seconds.</p>{% endif %}
+        {% if editable %}<p class="text-body-secondary mt-3 mb-0">{{ 'ui.cv_autosave_hint'|trans }}</p>{% endif %}
     </header>
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <section aria-labelledby="cv-identity" class="mb-4"><h2 id="cv-identity" class="h4 mb-3">Identity and contact</h2>
-                {% for item in view.identity %}{% include 'cv/_field.html.twig' with {item: item, editable: editable} only %}{% endfor %}
+            <section aria-labelledby="cv-identity" class="mb-4"><h2 id="cv-identity" class="h4 mb-3">{{ 'ui.identity_contact'|trans }}</h2>
+                {% for item in view.identity %}{% include 'cv/_field.html.twig' with {item: item, editable: editable, cvId: cv.id} only %}{% endfor %}
             </section>
-            <section aria-labelledby="cv-attributes"><h2 id="cv-attributes" class="h4 mb-3">Position details</h2>
-                {% for item in view.attributes %}{% include 'cv/_field.html.twig' with {item: item, editable: editable} only %}{% else %}<p class="text-body-secondary">No additional Position attributes.</p>{% endfor %}
+            <section aria-labelledby="cv-attributes"><h2 id="cv-attributes" class="h4 mb-3">{{ 'ui.position_details'|trans }}</h2>
+                {% for item in view.attributes %}{% include 'cv/_field.html.twig' with {item: item, editable: editable, cvId: cv.id} only %}{% else %}<p class="text-body-secondary">{{ 'ui.no_additional_attributes'|trans }}</p>{% endfor %}
             </section>
         </div>
-        <aside class="col-lg-4" aria-labelledby="cv-projects"><h2 id="cv-projects" class="h4 mb-3">Relevant projects</h2>
+        <aside class="col-lg-4" aria-labelledby="cv-projects"><h2 id="cv-projects" class="h4 mb-3">{{ 'ui.relevant_projects'|trans }}</h2>
             {% for project in view.projects %}
-                <article class="card mb-3"><div class="card-body"><h3 class="h6">{{ project.name }}</h3><p class="small text-body-secondary mb-2">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'Present' }}</p><div style="white-space: pre-wrap">{{ project.description }}</div></div></article>
-            {% else %}<p class="text-body-secondary">No matching projects.</p>{% endfor %}
+                <article class="card mb-3"><div class="card-body"><h3 class="h6">{{ project.name }}</h3><p class="small text-body-secondary mb-2">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'dynamic.present'|trans }}</p><div style="white-space: pre-wrap">{{ project.description }}</div></div></article>
+            {% else %}<p class="text-body-secondary">{{ 'ui.no_matching_projects'|trans }}</p>{% endfor %}
         </aside>
     </div>
 </main>

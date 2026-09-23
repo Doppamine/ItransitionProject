@@ -70,7 +70,7 @@ final class ProfilePageTest extends WebTestCase
             self::assertSelectorTextContains('body', $name);
         }
         self::assertSelectorExists('input[value="English"]');
-        self::assertSelectorTextContains('body', 'External image support is coming soon');
+        self::assertSelectorExists('[data-controller="image-upload"] input[type="file"][accept*="image/jpeg"]');
         self::assertSelectorExists('nav a[href="/profile"]');
     }
 

@@ -35,6 +35,12 @@ final class User implements UserInterface, EquatableInterface
     #[ORM\Column(options: ['default' => false])]
     private bool $blocked = false;
 
+    #[ORM\Column(length: 2, options: ['default' => 'en'])]
+    private string $locale = 'en';
+
+    #[ORM\Column(length: 5, options: ['default' => 'light'])]
+    private string $theme = 'light';
+
     public function __construct(string $email)
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -86,6 +92,32 @@ final class User implements UserInterface, EquatableInterface
     public function setBlocked(bool $blocked): void
     {
         $this->blocked = $blocked;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(string $locale): void
+    {
+        if (!in_array($locale, ['en', 'ru'], true)) {
+            throw new \InvalidArgumentException('Unsupported locale.');
+        }
+        $this->locale = $locale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(string $theme): void
+    {
+        if (!in_array($theme, ['light', 'dark'], true)) {
+            throw new \InvalidArgumentException('Unsupported theme.');
+        }
+        $this->theme = $theme;
     }
 
     public function isEqualTo(UserInterface $user): bool

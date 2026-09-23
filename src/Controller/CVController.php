@@ -12,6 +12,7 @@ use App\Enum\CVStatus;
 use App\Position\PositionEligibilityChecker;
 use App\Profile\ProfileValueMapper;
 use App\Repository\CVRepository;
+use App\Repository\CVLikeRepository;
 use App\Repository\PositionRepository;
 use App\Repository\ProfileRepository;
 use App\Security\CVVoter;
@@ -62,29 +63,59 @@ final class CVController extends AbstractController
 
     #[Route('/cvs', name: 'app_cv_index', methods: ['GET'])]
     #[IsGranted('ROLE_CANDIDATE')]
-    public function index(#[CurrentUser] User $user, ProfileRepository $profiles, CVRepository $cvs, PositionRepository $positions): Response
+    public function index(#[CurrentUser] User $user, ProfileRepository $profiles, CVRepository $cvs, PositionRepository $positions, CVLikeRepository $likes): Response
     {
         $profile = $profiles->findForEligibility($user) ?? throw $this->createNotFoundException('Profile not found.');
         $items = $cvs->findForProfile($profile);
         $positions->hydrateChildren(array_map(static fn (CV $cv): Position => $cv->getPosition(), $items));
         $visible = array_values(array_filter($items, fn (CV $cv): bool => $this->isGranted(CVVoter::VIEW, $cv)));
 
-        return $this->render('cv/index.html.twig', ['cvs' => $visible]);
+        return $this->render('cv/index.html.twig', ['cvs' => $visible, 'likeCounts' => $likes->countsForCVs($visible)]);
     }
 
     #[Route('/cvs/{id}', name: 'app_cv_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED')]
-    public function show(int $id, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles, CVViewBuilder $builder): Response
+    public function show(#[CurrentUser] User $user, int $id, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles, CVViewBuilder $builder, CVLikeRepository $likes): Response
     {
         $cv = $this->detailed($id, $cvs, $positions, $profiles);
         $this->denyAccessUnlessGranted(CVVoter::VIEW, $cv);
+        $canLike = $this->isGranted(CVVoter::LIKE, $cv);
 
         return $this->render('cv/show.html.twig', [
             'cv' => $cv,
             'view' => $builder->build($cv),
             'editable' => $this->isGranted(CVVoter::EDIT, $cv),
             'publishable' => $cv->getStatus() === CVStatus::DRAFT && $this->isGranted(CVVoter::PUBLISH, $cv),
+            'likeCount' => $likes->countsForCVs([$cv])[$cv->getId()] ?? 0,
+            'canLike' => $canLike,
+            'hasLiked' => $canLike && $likes->hasLiked($cv, $user),
         ]);
+    }
+
+    #[Route('/cvs/{id}/like', name: 'app_cv_like', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED')]
+    public function like(#[CurrentUser] User $user, int $id, Request $request, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles, CVLikeRepository $likes): Response
+    {
+        $cv = $this->detailed($id, $cvs, $positions, $profiles);
+        $this->denyAccessUnlessGranted(CVVoter::LIKE, $cv);
+        if (!$this->isCsrfTokenValid('cv_like_'.$id, $request->request->get('_token'))) {
+            return new Response('Invalid security token.', Response::HTTP_FORBIDDEN);
+        }
+        $likes->like($cv, $user);
+        return $this->redirectToRoute('app_cv_show', ['id' => $id]);
+    }
+
+    #[Route('/cvs/{id}/unlike', name: 'app_cv_unlike', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED')]
+    public function unlike(#[CurrentUser] User $user, int $id, Request $request, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles, CVLikeRepository $likes): Response
+    {
+        $cv = $this->detailed($id, $cvs, $positions, $profiles);
+        $this->denyAccessUnlessGranted(CVVoter::LIKE, $cv);
+        if (!$this->isCsrfTokenValid('cv_like_'.$id, $request->request->get('_token'))) {
+            return new Response('Invalid security token.', Response::HTTP_FORBIDDEN);
+        }
+        $likes->unlike($cv, $user);
+        return $this->redirectToRoute('app_cv_show', ['id' => $id]);
     }
 
     #[Route('/cvs/{id}/autosave', name: 'app_cv_autosave', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -152,13 +183,13 @@ final class CVController extends AbstractController
 
     #[Route('/positions/{id}/cvs', name: 'app_position_cvs', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted('ROLE_RECRUITER')]
-    public function positionCVs(int $id, PositionRepository $positions, CVRepository $cvs, ProfileRepository $profiles): Response
+    public function positionCVs(int $id, PositionRepository $positions, CVRepository $cvs, ProfileRepository $profiles, CVLikeRepository $likes): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         $items = $cvs->findForPosition($position, !$this->isGranted('ROLE_ADMIN'));
         $profiles->hydrateValues(array_map(static fn (CV $cv) => $cv->getProfile(), $items));
         $items = array_values(array_filter($items, fn (CV $cv): bool => $this->isGranted(CVVoter::VIEW, $cv)));
-        return $this->render('cv/position_index.html.twig', ['position' => $position, 'cvs' => $items]);
+        return $this->render('cv/position_index.html.twig', ['position' => $position, 'cvs' => $items, 'likeCounts' => $likes->countsForCVs($items)]);
     }
 
     private function detailed(int $id, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles): CV

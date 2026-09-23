@@ -13,3 +13,4 @@ body {
 .profile-optional-editor { background: #fafbfe; border: 1px solid #e5e9f1; border-radius: .75rem; padding: 1.25rem; }
 .profile-photo-placeholder { display: flex; align-items: center; gap: 1rem; background: #fafbfe; }
 .profile-editor .invalid-feedback:not(:empty) { display: block; }
+.discussion-content > :last-child { margin-bottom: 0; }

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ name }} · Candidate profile{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <a href="{{ path('app_positions_index') }}" class="d-inline-block mb-3">← Positions</a>
+    <header class="border-bottom pb-3 mb-4">
+        <p class="small text-uppercase text-primary fw-semibold mb-1">Candidate profile</p>
+        <h1 class="h2 mb-2">{{ name }}</h1>
+        {% if location %}<p class="text-body-secondary mb-0">{{ location }}</p>{% endif %}
+    </header>
+    <section aria-labelledby="public-projects"><h2 id="public-projects" class="h4 mb-3">Projects</h2>
+        {% for project in projects %}
+            <article class="card mb-3"><div class="card-body">
+                <h3 class="h6">{{ project.name }}</h3>
+                <p class="small text-body-secondary">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'Present' }}</p>
+                <p class="mb-0" style="white-space: pre-wrap">{{ project.description }}</p>
+            </div></article>
+        {% else %}<p class="text-body-secondary">No projects shared.</p>{% endfor %}
+    </section>
+</main>
+{% endblock %}

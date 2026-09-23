@@ -7,8 +7,11 @@ namespace App\Controller;
 use App\Entity\Position;
 use App\Entity\Profile;
 use App\Entity\User;
+use App\Discussion\DiscussionPostViewBuilder;
 use App\Enum\PositionAccessType;
 use App\Position\PositionEligibilityChecker;
+use App\Position\PositionDiscussionAccess;
+use App\Repository\DiscussionPostRepository;
 use App\Repository\PositionRepository;
 use App\Repository\ProfileRepository;
 use App\Repository\CVRepository;
@@ -21,9 +24,9 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 final class PositionController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(#[CurrentUser] ?User $user, PositionRepository $positions, ProfileRepository $profiles, PositionEligibilityChecker $eligibility): Response
+    public function index(#[CurrentUser] ?User $user, PositionRepository $positions, ProfileRepository $profiles, PositionEligibilityChecker $eligibility, PositionDiscussionAccess $discussionAccess): Response
     {
-        $manager = $this->isGranted('ROLE_RECRUITER') || $this->isGranted('ROLE_ADMIN');
+        $manager = $discussionAccess->isManager($user);
         $items = $positions->findForList(!$manager && !$this->isGranted('ROLE_CANDIDATE'));
         if (!$manager && $this->isGranted('ROLE_CANDIDATE')) {
             $profile = $user === null ? null : $profiles->findForEligibility($user);
@@ -33,12 +36,12 @@ final class PositionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(#[CurrentUser] ?User $user, int $id, PositionRepository $positions, ProfileRepository $profiles, CVRepository $cvs, PositionEligibilityChecker $eligibility): Response
+    public function show(#[CurrentUser] ?User $user, int $id, PositionRepository $positions, CVRepository $cvs, PositionDiscussionAccess $discussionAccess, DiscussionPostRepository $posts, DiscussionPostViewBuilder $postViews): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
-        $manager = $this->isGranted('ROLE_RECRUITER') || $this->isGranted('ROLE_ADMIN');
-        $profile = $user !== null && $this->isGranted('ROLE_CANDIDATE') ? $profiles->findForEligibility($user) : null;
-        $candidateEligible = $profile instanceof Profile && $eligibility->isEligible($position, $profile);
+        $manager = $discussionAccess->isManager($user);
+        $profile = $discussionAccess->eligibleCandidateProfile($user, $position);
+        $candidateEligible = $profile instanceof Profile;
         if (!$manager && $position->getAccessType() === PositionAccessType::RESTRICTED) {
             if (!$candidateEligible) {
                 throw $this->createNotFoundException('Position not found.');
@@ -49,6 +52,8 @@ final class PositionController extends AbstractController
             'manager' => $manager,
             'candidateEligible' => $candidateEligible,
             'cv' => $candidateEligible ? $cvs->findOneBy(['profile' => $profile, 'position' => $position]) : null,
+            'discussionAllowed' => $manager || $candidateEligible,
+            'discussionPosts' => $manager || $candidateEligible ? $postViews->build($posts->latestForPosition($position), $manager) : [],
         ]);
     }
 }

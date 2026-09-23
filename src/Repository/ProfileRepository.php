@@ -9,6 +9,7 @@ use App\Entity\Profile;
 use App\Entity\User;
 use App\Enum\AttributeType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /** @extends ServiceEntityRepository<Profile> */
@@ -76,6 +77,31 @@ final class ProfileRepository extends ServiceEntityRepository
             ->leftJoin('p.values', 'v')->leftJoin('v.definition', 'd')->leftJoin('v.option', 'o')
             ->where('p.id IN (:ids)')->setParameter('ids', $ids)
             ->getQuery()->getResult();
+    }
+
+    /** @param list<int> $userIds
+     *  @return array<int, array<string, string>>
+     */
+    public function publicDetailsForUsers(array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+        $rows = $this->getEntityManager()->getConnection()->executeQuery(
+            "SELECT p.user_id, d.normalized_name, v.text_value
+             FROM profile p
+             JOIN profile_attribute_value v ON v.profile_id = p.id
+             JOIN attribute_definition d ON d.id = v.attribute_definition_id
+             WHERE p.user_id IN (:ids) AND d.is_built_in = TRUE
+               AND d.normalized_name IN ('first name', 'last name', 'location')",
+            ['ids' => $userIds],
+            ['ids' => ArrayParameterType::INTEGER],
+        )->fetchAllAssociative();
+        $details = [];
+        foreach ($rows as $row) {
+            $details[(int) $row['user_id']][$row['normalized_name']] = trim((string) $row['text_value']);
+        }
+        return $details;
     }
 
     /** @return list<array{id: int, name: string, category: string, type: string}> */

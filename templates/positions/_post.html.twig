@@ -1,0 +1,7 @@
+<article class="border-bottom py-3" data-post-id="{{ item.post.id }}">
+    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+        <strong>{% if item.candidateId %}<a href="{{ path('app_candidate_public', {id: item.candidateId}) }}">{{ item.authorName }}</a>{% else %}{{ item.authorName }}{% endif %}</strong>
+        <time class="small text-body-secondary" datetime="{{ item.post.createdAt|date('c') }}">{{ item.post.createdAt|date('Y-m-d H:i') }}</time>
+    </div>
+    <div class="discussion-content">{{ item.html|raw }}</div>
+</article>

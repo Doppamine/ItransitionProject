@@ -14,13 +14,19 @@
     <a href="{{ path('app_positions_show', {id: cv.position.id}) }}" class="d-inline-block mb-3" {% if editable %}data-action="click->profile-autosave#guardNavigation"{% endif %}>← Position</a>
     <header class="border-bottom pb-4 mb-4">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div><p class="small text-uppercase text-primary fw-semibold mb-1">Candidate CV</p><h1 class="display-6 fw-semibold mb-2">{{ cv.position.title }}</h1><span class="badge text-bg-{{ cv.status.value == 'PUBLISHED' ? 'success' : 'secondary' }}">{{ cv.status.value|capitalize }}</span></div>
+            <div><p class="small text-uppercase text-primary fw-semibold mb-1">Candidate CV</p><h1 class="display-6 fw-semibold mb-2">{{ cv.position.title }}</h1><span class="badge text-bg-{{ cv.status.value == 'PUBLISHED' ? 'success' : 'secondary' }}">{{ cv.status.value|capitalize }}</span><p class="text-body-secondary mt-2 mb-0">{{ likeCount }} {{ likeCount == 1 ? 'like' : 'likes' }}</p></div>
             <div class="d-flex flex-column align-items-end gap-2">
                 {% if editable %}<div class="profile-save-state" role="status" aria-live="polite" data-profile-autosave-target="status">Saved</div>{% endif %}
                 {% if publishable %}
                     <form method="post" action="{{ path('app_cv_publish', {id: cv.id}) }}" {% if editable %}data-action="submit->profile-autosave#guardNavigation"{% endif %}>
                         <input type="hidden" name="_token" value="{{ csrf_token('cv_publish_' ~ cv.id) }}">
                         <button type="submit" class="btn btn-primary">Publish CV</button>
+                    </form>
+                {% endif %}
+                {% if canLike %}
+                    <form method="post" action="{{ path(hasLiked ? 'app_cv_unlike' : 'app_cv_like', {id: cv.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_like_' ~ cv.id) }}">
+                        <button type="submit" class="btn btn-outline-primary">{{ hasLiked ? 'Unlike' : 'Like' }}</button>
                     </form>
                 {% endif %}
             </div>

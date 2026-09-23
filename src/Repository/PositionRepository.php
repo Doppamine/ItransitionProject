@@ -38,6 +38,19 @@ final class PositionRepository extends ServiceEntityRepository
         return $position;
     }
 
+    /** @param list<int> $ids
+     *  @return list<Position>
+     */
+    public function findByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+        $positions = $this->findBy(['id' => $ids]);
+        $this->hydrateChildren($positions);
+        return $positions;
+    }
+
     /** @param list<Position> $positions */
     public function hydrateChildren(array $positions): void
     {

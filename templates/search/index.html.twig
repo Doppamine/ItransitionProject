@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Search · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <h1 class="h2 mb-3">Search</h1>
+    {% if query == '' %}
+        <p class="text-body-secondary">Enter a search term to find Positions.</p>
+    {% else %}
+        <p class="text-body-secondary">Results for “{{ query }}”</p>
+        <h2 class="h4 mt-4">Positions</h2>
+        <div class="table-responsive border rounded-3">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th scope="col">Position</th><th scope="col">Access</th><th scope="col">Updated</th></tr></thead>
+                <tbody>
+                    {% for position in positions %}
+                        <tr><td><a href="{{ path('app_positions_show', {id: position.id}) }}">{{ position.title }}</a></td><td>{{ position.accessType.value|capitalize }}</td><td>{{ position.updatedAt|date('Y-m-d') }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-body-secondary py-4">No matching Positions are available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if showCVs %}
+            <h2 class="h4 mt-5">CVs</h2>
+            <div id="cv-results" class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th scope="col">Candidate</th><th scope="col">Position</th>{% if admin %}<th scope="col">Status</th>{% endif %}<th scope="col">Likes</th><th scope="col">Updated</th></tr></thead>
+                    <tbody>
+                        {% for row in cvRows %}
+                            <tr><td><a href="{{ path('app_cv_show', {id: row.cv.id}) }}">{{ row.candidateName }}</a></td><td>{{ row.cv.position.title }}</td>{% if admin %}<td>{{ row.cv.status.value|capitalize }}</td>{% endif %}<td>{{ row.likeCount }}</td><td>{{ row.cv.updatedAt|date('Y-m-d') }}</td></tr>
+                        {% else %}
+                            <tr><td colspan="{{ admin ? 5 : 4 }}" class="text-body-secondary py-4">No matching CVs are available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endif %}
+</main>
+{% endblock %}

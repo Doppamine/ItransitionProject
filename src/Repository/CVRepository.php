@@ -28,6 +28,22 @@ final class CVRepository extends ServiceEntityRepository
             ->getQuery()->getOneOrNullResult();
     }
 
+    /** @param list<int> $ids
+     *  @return list<CV>
+     */
+    public function findByIdsForResults(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+        return $this->createQueryBuilder('cv')
+            ->join('cv.profile', 'profile')->addSelect('profile')
+            ->join('profile.user', 'candidate')->addSelect('candidate')
+            ->join('cv.position', 'position')->addSelect('position')
+            ->where('cv.id IN (:ids)')->setParameter('ids', $ids)
+            ->getQuery()->getResult();
+    }
+
     /** @return list<CV> */
     public function findForProfile(Profile $profile): array
     {

@@ -8,14 +8,15 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class AuthenticationPagesTest extends WebTestCase
 {
-    public function testHomeKeepsExistingTextAndShowsAnonymousLogin(): void
+    public function testMainPageShowsPublicSectionsAndAnonymousLogin(): void
     {
         $client = static::createClient();
         $client->request('GET', '/');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('h1', 'Itransition Project');
-        self::assertSelectorTextContains('body', 'Symfony application is running.');
+        self::assertSelectorTextContains('h1', 'Main Page');
+        self::assertSelectorTextContains('body', 'Latest Positions');
+        self::assertSelectorTextContains('body', 'Statistics');
         self::assertSelectorExists('nav a[href="/login"]');
     }
 

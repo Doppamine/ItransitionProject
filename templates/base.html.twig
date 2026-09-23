@@ -9,10 +9,16 @@
         {% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand bg-body-tertiary border-bottom" aria-label="Main navigation">
-            <div class="container">
+        <header class="bg-body-tertiary border-bottom">
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="container d-flex flex-wrap gap-3">
                 <a class="navbar-brand" href="{{ path('app_home') }}">Itransition Project</a>
-                <div class="ms-auto d-flex align-items-center gap-3">
+                <form action="{{ path('app_search') }}" method="get" role="search" class="d-flex flex-grow-1" style="max-width: 24rem">
+                    <label class="visually-hidden" for="site-search">Search</label>
+                    <input id="site-search" class="form-control form-control-sm me-2" type="search" name="q" maxlength="200" placeholder="Search positions and CVs" value="{{ app.request.query.get('q') is same as(null) ? '' : app.request.query.get('q') }}">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>
+                </form>
+                <div class="ms-auto d-flex flex-wrap align-items-center gap-3">
                     <a class="nav-link" href="{{ path('app_positions_index') }}">Positions</a>
                     {% if app.user %}
                         {% if is_granted('ROLE_CANDIDATE') %}
@@ -29,6 +35,7 @@
                 </div>
             </div>
         </nav>
+        </header>
         {% block body %}{% endblock %}
     </body>
 </html>

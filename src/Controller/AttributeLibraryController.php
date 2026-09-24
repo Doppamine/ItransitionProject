@@ -10,6 +10,7 @@ use App\Entity\AttributeOption;
 use App\Enum\AttributeType;
 use App\Form\AttributeDefinitionType;
 use App\Repository\AttributeDefinitionRepository;
+use App\Twig\SystemLabelExtension;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\LockMode;
@@ -45,11 +46,11 @@ final class AttributeLibraryController extends AbstractController
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-    public function create(Request $request, AttributeDefinitionRepository $definitions, EntityManagerInterface $em): Response
+    public function create(Request $request, AttributeDefinitionRepository $definitions, EntityManagerInterface $em, SystemLabelExtension $labels): Response
     {
         $categories = $em->getRepository(AttributeCategory::class)->findBy([], ['name' => 'ASC']);
         $form = $this->createForm(AttributeDefinitionType::class, ['description' => ''], [
-            'categories' => $this->categoryChoices($categories),
+            'categories' => $this->categoryChoices($categories, $labels),
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -81,7 +82,7 @@ final class AttributeLibraryController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function edit(AttributeDefinition $definition, Request $request, AttributeDefinitionRepository $definitions, EntityManagerInterface $em): Response
+    public function edit(AttributeDefinition $definition, Request $request, AttributeDefinitionRepository $definitions, EntityManagerInterface $em, SystemLabelExtension $labels): Response
     {
         $categories = $em->getRepository(AttributeCategory::class)->findBy([], ['name' => 'ASC']);
         $used = $definitions->isUsed($definition);
@@ -92,7 +93,7 @@ final class AttributeLibraryController extends AbstractController
             'description' => $definition->getDescription(),
             'type' => $definition->getType()->value,
             'version' => (string) $definition->getVersion(),
-        ], ['categories' => $this->categoryChoices($categories), 'built_in' => $definition->isBuiltIn(), 'type_fixed' => $typeFixed, 'editing' => true]);
+        ], ['categories' => $this->categoryChoices($categories, $labels), 'built_in' => $definition->isBuiltIn(), 'type_fixed' => $typeFixed, 'editing' => true]);
         $form->handleRequest($request);
         $status = Response::HTTP_OK;
         if ($form->isSubmitted()) {
@@ -265,11 +266,11 @@ final class AttributeLibraryController extends AbstractController
     }
 
     /** @param list<AttributeCategory> $categories */
-    private function categoryChoices(array $categories): array
+    private function categoryChoices(array $categories, SystemLabelExtension $labels): array
     {
         $choices = [];
         foreach ($categories as $category) {
-            $choices[$category->getName()] = (string) $category->getId();
+            $choices[$category->getId()] = $labels->categoryLabel($category);
         }
         return $choices;
     }

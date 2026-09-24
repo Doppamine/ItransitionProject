@@ -7,15 +7,15 @@
     <h1 class="h2 my-4">{{ 'ui.choose_rule_attribute'|trans }}</h1>
     <form method="get" action="{{ path('app_positions_rule_new', {id: position.id}) }}" class="row g-2 mb-3">
         <div class="col-sm-5"><label class="form-label" for="rule-attribute-q">{{ 'ui.name_starts_with'|trans }}</label><input id="rule-attribute-q" class="form-control" name="attribute_q" value="{{ attributeQuery }}" maxlength="255"></div>
-        <div class="col-sm-5"><label class="form-label" for="rule-attribute-category">{{ 'ui.category'|trans }}</label><select id="rule-attribute-category" class="form-select" name="attribute_category"><option value="">{{ 'ui.all_categories'|trans }}</option>{% for category in categories %}<option value="{{ category.id }}"{{ attributeCategory == category.id ? ' selected' : '' }}>{{ category.name }}</option>{% endfor %}</select></div>
+        <div class="col-sm-5"><label class="form-label" for="rule-attribute-category">{{ 'ui.category'|trans }}</label><select id="rule-attribute-category" class="form-select" name="attribute_category"><option value="">{{ 'ui.all_categories'|trans }}</option>{% for category in categories %}<option value="{{ category.id }}"{{ attributeCategory == category.id ? ' selected' : '' }}>{{ category|category_label }}</option>{% endfor %}</select></div>
         <div class="col-sm-2 align-self-end"><button class="btn btn-outline-secondary w-100" type="submit">{{ 'ui.find'|trans }}</button></div>
     </form>
     <form method="get" action="{{ path('app_positions_rule_new', {id: position.id}) }}" class="card card-body">
         <label class="form-label" for="rule-definition">{{ 'ui.attribute'|trans }}</label>
         <select id="rule-definition" class="form-select" name="definition" required>
             <option value="">{{ 'ui.choose_attribute'|trans }}</option>
-            {% if recent %}<optgroup label="{{ 'attributes.recent'|trans }}">{% for definition in recent %}<option value="{{ definition.id }}">{{ definition.name }}</option>{% endfor %}</optgroup>{% endif %}
-            <optgroup label="{{ 'attributes.all'|trans }}">{% for definition in definitions %}<option value="{{ definition.id }}">{{ definition.name }} ({{ ('enum.type.' ~ definition.type.value)|trans }})</option>{% endfor %}</optgroup>
+            {% if recent %}<optgroup label="{{ 'attributes.recent'|trans }}">{% for definition in recent %}<option value="{{ definition.id }}">{{ definition|attribute_label }}</option>{% endfor %}</optgroup>{% endif %}
+            <optgroup label="{{ 'attributes.all'|trans }}">{% for definition in definitions %}<option value="{{ definition.id }}">{{ definition|attribute_label }} ({{ ('enum.type.' ~ definition.type.value)|trans }})</option>{% endfor %}</optgroup>
         </select>
         <p class="small text-body-secondary mt-2 mb-0">{{ 'ui.attributes_limit'|trans }}</p>
         <button class="btn btn-primary mt-3 align-self-start">{{ 'ui.continue'|trans }}</button>

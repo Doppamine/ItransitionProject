@@ -11,7 +11,7 @@
     {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message|trans }}</div>{% endfor %}
     <form method="get" action="{{ path('app_attributes_index') }}" class="row g-2 align-items-end mb-3">
         <div class="col-md-5"><label for="attribute-query" class="form-label">{{ 'ui.name_starts_with'|trans }}</label><input id="attribute-query" class="form-control" name="q" maxlength="100" value="{{ q }}"></div>
-        <div class="col-md-3"><label for="attribute-category" class="form-label">{{ 'ui.category'|trans }}</label><select id="attribute-category" class="form-select" name="category"><option value="">{{ 'ui.all_categories'|trans }}</option>{% for category in categories %}<option value="{{ category.id }}" {% if categoryId == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
+        <div class="col-md-3"><label for="attribute-category" class="form-label">{{ 'ui.category'|trans }}</label><select id="attribute-category" class="form-select" name="category"><option value="">{{ 'ui.all_categories'|trans }}</option>{% for category in categories %}<option value="{{ category.id }}" {% if categoryId == category.id %}selected{% endif %}>{{ category|category_label }}</option>{% endfor %}</select></div>
         <div class="col-md-3"><label for="attribute-type" class="form-label">{{ 'ui.type'|trans }}</label><select id="attribute-type" class="form-select" name="type"><option value="">{{ 'ui.all_types'|trans }}</option>{% for type in types %}<option value="{{ type.value }}" {% if selectedType == type.value %}selected{% endif %}>{{ ('enum.type.' ~ type.value)|trans }}</option>{% endfor %}</select></div>
         <div class="col-md-1"><button class="btn btn-outline-primary w-100" type="submit">{{ 'ui.find'|trans }}</button></div>
     </form>
@@ -20,7 +20,7 @@
             <thead><tr><th scope="col">{{ 'ui.name'|trans }}</th><th scope="col">{{ 'ui.category'|trans }}</th><th scope="col">{{ 'ui.type'|trans }}</th><th scope="col">{{ 'ui.built_in'|trans }}</th><th scope="col">{{ 'ui.usage'|trans }}</th></tr></thead>
             <tbody>
             {% for definition in definitions %}
-                <tr><td><a href="{{ path('app_attributes_edit', {id: definition.id}) }}">{{ definition.name }}</a></td><td>{{ definition.category }}</td><td>{{ ('enum.type.' ~ definition.type)|trans }}</td><td>{{ (definition.is_built_in ? 'common.yes' : 'common.no')|trans }}</td><td>{{ definition.usage_count > 0 ? 'dynamic.used_count'|trans({'%count%': definition.usage_count}) : 'dynamic.unused'|trans }}</td></tr>
+                <tr><td><a href="{{ path('app_attributes_edit', {id: definition.id}) }}">{{ definition|attribute_label }}</a></td><td>{{ definition.category|category_label }}</td><td>{{ ('enum.type.' ~ definition.type)|trans }}</td><td>{{ (definition.is_built_in ? 'common.yes' : 'common.no')|trans }}</td><td>{{ definition.usage_count > 0 ? 'dynamic.used_count'|trans({'%count%': definition.usage_count}) : 'dynamic.unused'|trans }}</td></tr>
             {% else %}
                 <tr><td colspan="5" class="text-body-secondary py-4 text-center">{{ 'ui.no_matching_attributes'|trans }}</td></tr>
             {% endfor %}

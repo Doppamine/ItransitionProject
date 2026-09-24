@@ -19,7 +19,8 @@ final class AttributeDefinitionType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, ['label' => 'ui.name', 'disabled' => $options['built_in'], 'attr' => ['maxlength' => 255]])
-            ->add('category', ChoiceType::class, ['label' => 'ui.category', 'choices' => $options['categories'], 'choice_translation_domain' => false])
+            ->add('category', ChoiceType::class, ['label' => 'ui.category', 'choices' => array_map('strval', array_keys($options['categories'])),
+                'choice_label' => static fn (string $id): string => $options['categories'][(int) $id], 'choice_translation_domain' => false])
             ->add('description', TextareaType::class, ['label' => 'form.description', 'required' => false])
             ->add('type', ChoiceType::class, [
                 'label' => 'ui.type',

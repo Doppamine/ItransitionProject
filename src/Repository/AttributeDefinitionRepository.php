@@ -21,7 +21,7 @@ final class AttributeDefinitionRepository extends ServiceEntityRepository
     /** @return list<array<string, mixed>> */
     public function search(string $prefix, ?int $categoryId, ?AttributeType $type): array
     {
-        $sql = 'SELECT d.id, d.name, c.name AS category, d.type, d.is_built_in,
+        $sql = 'SELECT d.id, d.name, d.normalized_name, c.name AS category, d.type, d.is_built_in,
                        ((SELECT COUNT(*) FROM profile_attribute_value v WHERE v.attribute_definition_id = d.id)
                         + (SELECT COUNT(*) FROM position_attribute pa WHERE pa.attribute_definition_id = d.id)
                         + (SELECT COUNT(*) FROM position_access_rule pr WHERE pr.attribute_definition_id = d.id)) AS usage_count

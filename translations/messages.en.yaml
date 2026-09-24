@@ -54,6 +54,16 @@ image:
 attributes:
     recent: 'Recently used attributes'
     all: 'All attributes'
+builtin_attribute:
+    first_name: 'First Name'
+    last_name: 'Last Name'
+    location: Location
+    personal_photo: 'Personal Photo'
+seeded_category:
+    certification: Certification
+    domain_knowledge: 'Domain Knowledge'
+    personal_information: 'Personal Information'
+    soft_skills: 'Soft Skills'
 admin:
     users: Users
     email_prefix: 'Email prefix'

@@ -27,14 +27,14 @@
     {% if position.shortDescription %}<p class="lead">{{ position.shortDescription }}</p>{% endif %}
     <div class="row g-4">
         <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">{{ 'ui.template_attributes'|trans }}</h2>
-            <ol class="mb-0">{% for item in position.attributes %}<li>{{ item.definition.name }}</li>{% else %}<li class="text-body-secondary">{{ 'ui.no_attributes_selected'|trans }}</li>{% endfor %}</ol>
+            <ol class="mb-0">{% for item in position.attributes %}<li>{{ item.definition|attribute_label }}</li>{% else %}<li class="text-body-secondary">{{ 'ui.no_attributes_selected'|trans }}</li>{% endfor %}</ol>
         </div></div></section>
         <section class="col-lg-5"><div class="card h-100"><div class="card-body"><h2 class="h5">{{ 'ui.projects'|trans }}</h2><p>{{ 'ui.maximum_projects'|trans }} <strong>{{ position.maxProjects }}</strong></p>
             <div>{% for tag in position.projectTags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% else %}<span class="text-body-secondary">{{ 'ui.no_project_tags'|trans }}</span>{% endfor %}</div>
         </div></div></section>
     </div>
     {% if manager %}<section class="card mt-4"><div class="card-body"><h2 class="h5">{{ 'ui.access_rules_lower'|trans }}</h2>
-        {% for rule in position.accessRules %}<p class="mb-2"><strong>{{ rule.definition.name }}</strong> {{ ('enum.operator.' ~ rule.operator.value)|trans }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></p>{% else %}<p class="text-body-secondary mb-0">{{ 'ui.no_access_rules'|trans }}</p>{% endfor %}
+        {% for rule in position.accessRules %}<p class="mb-2"><strong>{{ rule.definition|attribute_label }}</strong> {{ ('enum.operator.' ~ rule.operator.value)|trans }} <span class="text-body-secondary">{{ rule_value.expected(rule) }}</span></p>{% else %}<p class="text-body-secondary mb-0">{{ 'ui.no_access_rules'|trans }}</p>{% endfor %}
     </div></section>{% endif %}
     <section class="card mt-4" id="discussion"><div class="card-body">
         <h2 class="h5 mb-3">{{ 'ui.discussion'|trans }}</h2>

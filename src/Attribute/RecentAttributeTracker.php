@@ -27,7 +27,7 @@ final class RecentAttributeTracker
         $session->set('recent_attributes', array_slice($ids, 0, self::LIMIT));
     }
 
-    /** @return list<array{id: int, name: string, category: string}> */
+    /** @return list<array{id: int, name: string, normalized_name: string, is_built_in: bool, category: string}> */
     public function list(bool $rulesOnly = false): array
     {
         $ids = $this->ids();
@@ -35,7 +35,7 @@ final class RecentAttributeTracker
             return [];
         }
         $rows = $this->connection->executeQuery(
-            'SELECT d.id, d.name, d.type, c.name AS category FROM attribute_definition d JOIN attribute_category c ON c.id = d.category_id WHERE d.id IN (:ids)',
+            'SELECT d.id, d.name, d.normalized_name, d.is_built_in, d.type, c.name AS category FROM attribute_definition d JOIN attribute_category c ON c.id = d.category_id WHERE d.id IN (:ids)',
             ['ids' => $ids], ['ids' => ArrayParameterType::INTEGER],
         )->fetchAllAssociative();
         $byId = [];
@@ -43,7 +43,8 @@ final class RecentAttributeTracker
             if ($rulesOnly && $row['type'] === 'image') {
                 continue;
             }
-            $byId[(int) $row['id']] = ['id' => (int) $row['id'], 'name' => $row['name'], 'category' => $row['category']];
+            $byId[(int) $row['id']] = ['id' => (int) $row['id'], 'name' => $row['name'], 'normalized_name' => $row['normalized_name'],
+                'is_built_in' => in_array($row['is_built_in'], [true, 1, '1', 't'], true), 'category' => $row['category']];
         }
         $result = [];
         foreach ($ids as $id) {

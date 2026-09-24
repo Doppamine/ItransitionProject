@@ -3,12 +3,12 @@
     {% if editable %}
         {% include 'profile/_editor.html.twig' with {definition: item.definition, value: item.value, imageScope: 'cv', imageTargetId: cvId} only %}
     {% else %}
-        <div class="fw-semibold mb-1">{{ item.definition.name }}</div>
+        <div class="fw-semibold mb-1">{{ item.definition|attribute_label }}</div>
         {% if item.missing %}
             <div class="text-danger fw-semibold">{{ 'ui.missing_value'|trans }}</div>
         {% else %}
             {% if item.definition.type.value == 'image' and item.value and cloudinary_image_url(item.value.imageKey) %}
-                <img src="{{ cloudinary_image_url(item.value.imageKey) }}" alt="{{ item.definition.name }}" class="img-fluid rounded-3 profile-image-preview" loading="lazy">
+                <img src="{{ cloudinary_image_url(item.value.imageKey) }}" alt="{{ item.definition|attribute_label }}" class="img-fluid rounded-3 profile-image-preview" loading="lazy">
             {% elseif item.definition.type.value == 'image' %}
                 <div class="text-body-secondary">{{ 'image.unavailable'|trans }}</div>
             {% elseif item.definition.type.value == 'boolean' %}

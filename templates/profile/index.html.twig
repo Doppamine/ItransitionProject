@@ -67,7 +67,7 @@
                 {% if recent %}
                     <div class="mb-3" id="recent-attributes"><h4 class="h6">{{ 'attributes.recent'|trans }}</h4><div class="d-flex flex-wrap gap-2">
                         {% for attribute in recent %}
-                            <form method="post" action="{{ path('app_profile_select', {id: attribute.id}) }}" data-action="submit->profile-autosave#guardNavigation"><input type="hidden" name="_token" value="{{ csrf_token('profile') }}"><button class="btn btn-outline-secondary btn-sm" type="submit">{{ attribute.name }}</button></form>
+                            <form method="post" action="{{ path('app_profile_select', {id: attribute.id}) }}" data-action="submit->profile-autosave#guardNavigation"><input type="hidden" name="_token" value="{{ csrf_token('profile') }}"><button class="btn btn-outline-secondary btn-sm" type="submit">{{ attribute|attribute_label }}</button></form>
                         {% endfor %}
                     </div></div>
                 {% endif %}
@@ -81,7 +81,7 @@
                         <select id="attribute-category" name="category" class="form-select">
                             <option value="">{{ 'ui.all_categories'|trans }}</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' : '' }}>{{ category.name }}</option>
+                                <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' : '' }}>{{ category|category_label }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -90,7 +90,7 @@
                 <div id="attribute-results" class="list-group list-group-flush border rounded-3 overflow-hidden">
                     {% for attribute in available %}
                         <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
-                            <div><strong>{{ attribute.name }}</strong><span class="text-body-secondary small ms-2">{{ attribute.category }}</span></div>
+                            <div><strong>{{ attribute|attribute_label }}</strong><span class="text-body-secondary small ms-2">{{ attribute.category|category_label }}</span></div>
                             <form method="post" action="{{ path('app_profile_select', {id: attribute.id}) }}" data-action="submit->profile-autosave#guardNavigation">
                                 <input type="hidden" name="_token" value="{{ csrf_token('profile') }}">
                                 <button type="submit" class="btn btn-outline-primary btn-sm">{{ 'ui.add'|trans }}</button>

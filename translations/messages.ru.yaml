@@ -54,6 +54,16 @@ image:
 attributes:
     recent: 'Недавно использованные атрибуты'
     all: 'Все атрибуты'
+builtin_attribute:
+    first_name: Имя
+    last_name: Фамилия
+    location: Местоположение
+    personal_photo: 'Личная фотография'
+seeded_category:
+    certification: Сертификация
+    domain_knowledge: 'Предметные знания'
+    personal_information: 'Личная информация'
+    soft_skills: 'Гибкие навыки'
 admin:
     users: Пользователи
     email_prefix: 'Начало адреса почты'

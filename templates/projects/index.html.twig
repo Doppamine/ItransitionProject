@@ -27,7 +27,7 @@
                     </form>
                 </div>
             </div>
-            {% if project.description %}<p class="mb-2" style="white-space: pre-wrap">{{ project.description }}</p>{% endif %}
+            {% if project.description %}<div class="mb-2">{{ project.description|safe_markdown }}</div>{% endif %}
             {% for tag in project.tags %}<span class="badge text-bg-secondary me-1">{{ tag.name }}</span>{% endfor %}
         </div></article>
     {% else %}

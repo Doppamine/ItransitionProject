@@ -24,10 +24,16 @@
                         <button type="submit" class="btn btn-primary">{{ 'ui.publish_cv'|trans }}</button>
                     </form>
                 {% endif %}
+                {% if deletable %}
+                    <form method="post" action="{{ path('app_cv_delete', {id: cv.id}) }}" onsubmit="return confirm({{ 'dynamic.delete_cv_confirm'|trans|json_encode|raw }})" {% if editable %}data-action="submit->profile-autosave#guardNavigation"{% endif %}>
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_delete_' ~ cv.id) }}">
+                        <button type="submit" class="btn btn-outline-danger">{{ 'ui.delete_cv'|trans }}</button>
+                    </form>
+                {% endif %}
                 {% if canLike %}
                     <form method="post" action="{{ path(hasLiked ? 'app_cv_unlike' : 'app_cv_like', {id: cv.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('cv_like_' ~ cv.id) }}">
-                        <button type="submit" class="btn btn-outline-primary">{{ hasLiked ? 'Unlike' : 'Like' }}</button>
+                        <button type="submit" class="btn btn-outline-primary">{{ (hasLiked ? 'ui.unlike_cv' : 'ui.like_cv')|trans }}</button>
                     </form>
                 {% endif %}
             </div>
@@ -46,7 +52,7 @@
         </div>
         <aside class="col-lg-4" aria-labelledby="cv-projects"><h2 id="cv-projects" class="h4 mb-3">{{ 'ui.relevant_projects'|trans }}</h2>
             {% for project in view.projects %}
-                <article class="card mb-3"><div class="card-body"><h3 class="h6">{{ project.name }}</h3><p class="small text-body-secondary mb-2">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'dynamic.present'|trans }}</p><div style="white-space: pre-wrap">{{ project.description }}</div></div></article>
+                <article class="card mb-3"><div class="card-body"><h3 class="h6">{{ project.name }}</h3><p class="small text-body-secondary mb-2">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'dynamic.present'|trans }}</p><div>{{ project.description|safe_markdown }}</div></div></article>
             {% else %}<p class="text-body-secondary">{{ 'ui.no_matching_projects'|trans }}</p>{% endfor %}
         </aside>
     </div>

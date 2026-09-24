@@ -85,6 +85,7 @@ final class CVController extends AbstractController
             'cv' => $cv,
             'view' => $builder->build($cv),
             'editable' => $this->isGranted(CVVoter::EDIT, $cv),
+            'deletable' => $this->isGranted(CVVoter::DELETE, $cv),
             'publishable' => $cv->getStatus() === CVStatus::DRAFT && $this->isGranted(CVVoter::PUBLISH, $cv),
             'likeCount' => $likes->countsForCVs([$cv])[$cv->getId()] ?? 0,
             'canLike' => $canLike,
@@ -179,6 +180,23 @@ final class CVController extends AbstractController
         $cv->publish();
         $em->flush();
         return $this->redirectToRoute('app_cv_show', ['id' => $id]);
+    }
+
+    #[Route('/cvs/{id}/delete', name: 'app_cv_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED')]
+    public function delete(int $id, Request $request, CVRepository $cvs, PositionRepository $positions, ProfileRepository $profiles, EntityManagerInterface $em): Response
+    {
+        $cv = $this->detailed($id, $cvs, $positions, $profiles);
+        $this->denyAccessUnlessGranted(CVVoter::DELETE, $cv);
+        if (!$this->isCsrfTokenValid('cv_delete_'.$id, $request->request->get('_token'))) {
+            return new Response('Invalid security token.', Response::HTTP_FORBIDDEN);
+        }
+        $positionId = $cv->getPosition()->getId();
+        $admin = $this->isGranted('ROLE_ADMIN');
+        $em->remove($cv);
+        $em->flush();
+
+        return $this->redirectToRoute($admin ? 'app_position_cvs' : 'app_cv_index', $admin ? ['id' => $positionId] : []);
     }
 
     #[Route('/positions/{id}/cvs', name: 'app_position_cvs', requirements: ['id' => '\d+'], methods: ['GET'])]

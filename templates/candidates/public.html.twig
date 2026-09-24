@@ -15,7 +15,7 @@
             <article class="card mb-3"><div class="card-body">
                 <h3 class="h6">{{ project.name }}</h3>
                 <p class="small text-body-secondary">{{ project.startDate|date('Y-m-d') }} – {{ project.endDate ? project.endDate|date('Y-m-d') : 'dynamic.present'|trans }}</p>
-                <p class="mb-0" style="white-space: pre-wrap">{{ project.description }}</p>
+                <div class="mb-0">{{ project.description|safe_markdown }}</div>
             </div></article>
         {% else %}<p class="text-body-secondary">{{ 'ui.no_projects_shared'|trans }}</p>{% endfor %}
     </section>

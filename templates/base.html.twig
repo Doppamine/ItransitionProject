@@ -19,6 +19,7 @@
                     <button class="btn btn-outline-primary btn-sm" type="submit">{{ 'nav.search'|trans }}</button>
                 </form>
                 <div class="ms-auto d-flex flex-wrap align-items-center gap-3">
+                    {% if is_granted('IS_IMPERSONATOR') %}<a class="btn btn-warning btn-sm" href="{{ impersonation_exit_path(path('app_admin_users')) }}">{{ 'nav.exit_impersonation'|trans }}</a>{% endif %}
                     <a class="nav-link" href="{{ path('app_positions_index') }}">{{ 'nav.positions'|trans }}</a>
                     {% if app.user %}
                         {% if is_granted('ROLE_CANDIDATE') %}

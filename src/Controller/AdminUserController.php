@@ -49,7 +49,7 @@ final class AdminUserController extends AbstractController
         }
         $action = $request->request->get('action');
         $rawIds = $request->request->all('ids');
-        if (!is_string($action) || (!isset(self::ROLE_ACTIONS[$action]) && !in_array($action, ['block', 'unblock', 'delete'], true)) || count($rawIds) < 1 || count($rawIds) > 100) {
+        if (!is_string($action) || (!isset(self::ROLE_ACTIONS[$action]) && !in_array($action, ['block', 'unblock', 'delete', 'open_as_user'], true)) || count($rawIds) < 1 || count($rawIds) > 100) {
             return new Response('Select users and a valid action.', 422);
         }
         $ids = [];
@@ -62,6 +62,12 @@ final class AdminUserController extends AbstractController
         $users = $em->getRepository(User::class)->createQueryBuilder('u')->where('u.id IN (:ids)')->setParameter('ids', array_values($ids))->setMaxResults(100)->getQuery()->getResult();
         if (count($users) !== count($ids)) {
             return new Response('User selection changed. Reload the list.', 422);
+        }
+        if ($action === 'open_as_user') {
+            if (count($users) !== 1 || !in_array('ROLE_CANDIDATE', $users[0]->getRoles(), true)) {
+                return new Response('Select exactly one Candidate.', 422);
+            }
+            return $this->redirectToRoute('app_profile', ['_switch_user' => $users[0]->getUserIdentifier()]);
         }
         if (in_array($action, ['block', 'delete'], true)) {
             foreach ($users as $user) {

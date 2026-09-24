@@ -10,6 +10,7 @@ nav:
     users: Users
     logout: Logout
     login: Login
+    exit_impersonation: 'Exit impersonation'
 preferences:
     language: Language
     theme: Theme
@@ -68,6 +69,7 @@ admin:
     remove_recruiter: 'Remove Recruiter role'
     add_admin: 'Add Administrator role'
     remove_admin: 'Remove Administrator role'
+    open_as_user: 'Open as user'
     apply: 'Apply to selected'
     select: Select
     select_user: 'Select %email%'
@@ -124,6 +126,7 @@ ui:
     dashboard: Dashboard
     delete: Delete
     delete_attribute: 'Delete attribute'
+    delete_cv: 'Delete CV'
     delete_position: 'Delete position'
     discussion: Discussion
     discussion_unavailable: 'Discussion is unavailable for this Position.'
@@ -138,6 +141,8 @@ ui:
     info: Info
     profile_autosave_hint: 'Keep your details current. Edits save automatically every seven seconds.'
     likes: Likes
+    like_cv: Like
+    unlike_cv: Unlike
     markdown_hint: 'Markdown is supported. Posts cannot be edited or deleted.'
     maximum_projects: 'Maximum projects:'
     me: Me
@@ -278,6 +283,7 @@ dynamic:
     option_label: Option label
     profile_sections: Profile sections
     delete_project_confirm: Delete this project?
+    delete_cv_confirm: Delete this CV?
     delete_position_confirm: Delete this Position?
     delete_attribute_confirm: Delete this attribute and its profile values?
     yes: 'Yes'

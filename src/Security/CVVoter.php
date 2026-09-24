@@ -16,6 +16,7 @@ final class CVVoter extends Voter
     public const VIEW = 'CV_VIEW';
     public const EDIT = 'CV_EDIT';
     public const PUBLISH = 'CV_PUBLISH';
+    public const DELETE = 'CV_DELETE';
     public const LIKE = 'CV_LIKE';
 
     public function __construct(private readonly PositionEligibilityChecker $eligibility)
@@ -24,7 +25,7 @@ final class CVVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $subject instanceof CV && in_array($attribute, [self::VIEW, self::EDIT, self::PUBLISH, self::LIKE], true);
+        return $subject instanceof CV && in_array($attribute, [self::VIEW, self::EDIT, self::PUBLISH, self::DELETE, self::LIKE], true);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool

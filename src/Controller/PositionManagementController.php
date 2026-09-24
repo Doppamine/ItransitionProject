@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Attribute\RecentAttributeTracker;
 use App\Entity\AttributeDefinition;
+use App\Entity\AttributeCategory;
 use App\Entity\AttributeOption;
 use App\Entity\Position;
 use App\Entity\PositionAccessRule;
@@ -86,7 +87,7 @@ final class PositionManagementController extends AbstractController
         } elseif ($form->isSubmitted()) {
             $status = 422;
         }
-        return $this->render('positions/form.html.twig', $this->formContext($form, $position, $definitions, $tags, $recents), new Response(status: $status));
+        return $this->render('positions/form.html.twig', $this->formContext($form, $position, $definitions, $tags, $recents, $request, $em), new Response(status: $status));
     }
 
     #[Route('/{id}/duplicate', name: 'duplicate', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -193,15 +194,18 @@ final class PositionManagementController extends AbstractController
     }
 
     #[Route('/{id}/rules/new', name: 'rule_new', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function addRule(int $id, Request $request, PositionRepository $positions, AttributeDefinitionRepository $definitions, EntityManagerInterface $em): Response
+    public function addRule(int $id, Request $request, PositionRepository $positions, AttributeDefinitionRepository $definitions, EntityManagerInterface $em, RecentAttributeTracker $recents): Response
     {
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         $definitionId = $request->query->get('definition');
         $definition = is_string($definitionId) && ctype_digit($definitionId) ? $definitions->find((int) $definitionId) : null;
         if (!$definition instanceof AttributeDefinition || $definition->getType() === AttributeType::IMAGE) {
+            [$prefix, $categoryId] = $this->pickerCriteria($request);
             return $this->render(
                 'positions/rule_select.html.twig',
-                ['position' => $position, 'definitions' => $definitions->findSelectable(true)],
+                ['position' => $position, 'definitions' => $definitions->findSelectable(true, $prefix, $categoryId),
+                    'categories' => $em->getRepository(AttributeCategory::class)->findBy([], ['normalizedName' => 'ASC'], 100),
+                    'attributeQuery' => $prefix, 'attributeCategory' => $categoryId, 'recent' => $recents->list(true)],
                 new Response(status: $request->isMethod('POST') ? 422 : 200),
             );
         }
@@ -216,6 +220,7 @@ final class PositionManagementController extends AbstractController
                 $rule = new PositionAccessRule($position, $definition, $operator);
                 $this->applyExpected($rule, $definition, $data, $em);
                 $em->flush();
+                $recents->record((int) $definition->getId());
                 $this->addFlash('success', 'flash.access_rule_added');
                 return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
             } catch (OptimisticLockException|\UnexpectedValueException) {
@@ -243,12 +248,24 @@ final class PositionManagementController extends AbstractController
     }
 
     /** @return array<string, mixed> */
-    private function formContext(FormInterface $form, ?Position $position, ?AttributeDefinitionRepository $definitions = null, ?TagRepository $tags = null, ?RecentAttributeTracker $recents = null): array
+    private function formContext(FormInterface $form, ?Position $position, ?AttributeDefinitionRepository $definitions = null, ?TagRepository $tags = null, ?RecentAttributeTracker $recents = null, ?Request $request = null, ?EntityManagerInterface $em = null): array
     {
+        [$prefix, $categoryId] = $request === null ? ['', null] : $this->pickerCriteria($request);
         return ['form' => $form, 'position' => $position,
-            'definitions' => $position === null ? [] : $definitions?->findSelectable() ?? [],
+            'definitions' => $position === null ? [] : $definitions?->findSelectable(false, $prefix, $categoryId) ?? [],
+            'categories' => $position === null ? [] : $em?->getRepository(AttributeCategory::class)->findBy([], ['normalizedName' => 'ASC'], 100) ?? [],
+            'attributeQuery' => $prefix, 'attributeCategory' => $categoryId,
             'availableTags' => $position === null ? [] : $tags?->findAlphabetical() ?? [],
             'recent' => $recents?->list() ?? []];
+    }
+
+    /** @return array{string, ?int} */
+    private function pickerCriteria(Request $request): array
+    {
+        $query = $request->query->get('attribute_q');
+        $category = $request->query->get('attribute_category');
+        return [is_string($query) ? mb_substr(trim($query), 0, 255) : '',
+            is_string($category) && ctype_digit($category) && (int) $category > 0 ? (int) $category : null];
     }
 
     private function lock(Position $position, mixed $version, EntityManagerInterface $em): void

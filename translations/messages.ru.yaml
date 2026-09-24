@@ -10,6 +10,7 @@ nav:
     users: Пользователи
     logout: Выйти
     login: Войти
+    exit_impersonation: 'Выйти из режима пользователя'
 preferences:
     language: Язык
     theme: Тема
@@ -68,6 +69,7 @@ admin:
     remove_recruiter: 'Удалить роль рекрутера'
     add_admin: 'Добавить роль администратора'
     remove_admin: 'Удалить роль администратора'
+    open_as_user: 'Открыть от имени пользователя'
     apply: 'Применить к выбранным'
     select: Выбрать
     select_user: 'Выбрать %email%'
@@ -124,6 +126,7 @@ ui:
     dashboard: 'Панель управления'
     delete: Удалить
     delete_attribute: 'Удалить атрибут'
+    delete_cv: 'Удалить резюме'
     delete_position: 'Удалить вакансию'
     discussion: Обсуждение
     discussion_unavailable: 'Обсуждение этой вакансии недоступно.'
@@ -138,6 +141,8 @@ ui:
     info: Информация
     profile_autosave_hint: 'Поддерживайте данные в актуальном состоянии. Изменения сохраняются каждые семь секунд.'
     likes: Нравится
+    like_cv: Нравится
+    unlike_cv: Убрать лайк
     markdown_hint: 'Поддерживается Markdown. Сообщения нельзя редактировать или удалять.'
     maximum_projects: 'Максимум проектов:'
     me: 'О себе'
@@ -278,6 +283,7 @@ dynamic:
     option_label: Название варианта
     profile_sections: Разделы профиля
     delete_project_confirm: Удалить этот проект?
+    delete_cv_confirm: Удалить это резюме?
     delete_position_confirm: Удалить эту вакансию?
     delete_attribute_confirm: Удалить этот атрибут и значения в профилях?
     yes: Да

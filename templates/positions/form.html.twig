@@ -19,12 +19,18 @@
     {% if position %}
         <div class="row g-4">
             <section class="col-lg-7"><div class="card h-100"><div class="card-body"><h2 class="h5">{{ 'ui.template_attributes'|trans }}</h2>
+                <form method="get" action="{{ path('app_positions_edit', {id: position.id}) }}" class="row g-2 mb-3">
+                    <div class="col-sm-5"><label class="form-label" for="template-attribute-q">{{ 'ui.name_starts_with'|trans }}</label><input id="template-attribute-q" class="form-control" name="attribute_q" value="{{ attributeQuery }}" maxlength="255"></div>
+                    <div class="col-sm-5"><label class="form-label" for="template-attribute-category">{{ 'ui.category'|trans }}</label><select id="template-attribute-category" class="form-select" name="attribute_category"><option value="">{{ 'ui.all_categories'|trans }}</option>{% for category in categories %}<option value="{{ category.id }}"{{ attributeCategory == category.id ? ' selected' : '' }}>{{ category.name }}</option>{% endfor %}</select></div>
+                    <div class="col-sm-2 align-self-end"><button class="btn btn-outline-secondary w-100" type="submit">{{ 'ui.find'|trans }}</button></div>
+                </form>
                 <form method="post" action="{{ path('app_positions_attribute_add', {id: position.id}) }}" class="row g-2 mb-3">
                     <input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}">
                     <div class="col-sm-7"><select class="form-select" name="definition" required><option value="">{{ 'ui.choose_attribute'|trans }}</option>{% if recent %}<optgroup label="{{ 'attributes.recent'|trans }}">{% for definition in recent %}<option value="{{ definition.id }}">{{ definition.name }}</option>{% endfor %}</optgroup>{% endif %}<optgroup label="{{ 'attributes.all'|trans }}">{% for definition in definitions %}<option value="{{ definition.id }}">{{ definition.name }}</option>{% endfor %}</optgroup></select></div>
                     <div class="col-sm-3"><input class="form-control" type="number" min="0" name="sortOrder" value="{{ position.attributes|length * 10 + 10 }}" aria-label="{{ 'dynamic.sort_order'|trans }}" required></div>
                     <div class="col-sm-2"><button class="btn btn-outline-primary w-100" type="submit">{{ 'ui.add'|trans }}</button></div>
                 </form>
+                <p class="small text-body-secondary">{{ 'ui.attributes_limit'|trans }}</p>
                 {% for item in position.attributes %}<div class="d-flex gap-2 align-items-center border-top py-2"><span class="flex-grow-1">{{ item.definition.name }}</span>
                     <form class="d-flex gap-2" method="post" action="{{ path('app_positions_attribute_order', {id: position.id, childId: item.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><input class="form-control form-control-sm" style="width:6rem" type="number" min="0" name="sortOrder" value="{{ item.sortOrder }}" aria-label="{{ 'dynamic.sort_order'|trans }}"><button class="btn btn-outline-secondary btn-sm">{{ 'ui.order'|trans }}</button></form>
                     <form method="post" action="{{ path('app_positions_attribute_remove', {id: position.id, childId: item.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('position_child_' ~ position.id) }}"><input type="hidden" name="version" value="{{ position.version }}"><button class="btn btn-outline-danger btn-sm">{{ 'ui.remove'|trans }}</button></form>

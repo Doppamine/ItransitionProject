@@ -28,18 +28,21 @@ final class RecentAttributeTracker
     }
 
     /** @return list<array{id: int, name: string, category: string}> */
-    public function list(): array
+    public function list(bool $rulesOnly = false): array
     {
         $ids = $this->ids();
         if ($ids === []) {
             return [];
         }
         $rows = $this->connection->executeQuery(
-            'SELECT d.id, d.name, c.name AS category FROM attribute_definition d JOIN attribute_category c ON c.id = d.category_id WHERE d.id IN (:ids)',
+            'SELECT d.id, d.name, d.type, c.name AS category FROM attribute_definition d JOIN attribute_category c ON c.id = d.category_id WHERE d.id IN (:ids)',
             ['ids' => $ids], ['ids' => ArrayParameterType::INTEGER],
         )->fetchAllAssociative();
         $byId = [];
         foreach ($rows as $row) {
+            if ($rulesOnly && $row['type'] === 'image') {
+                continue;
+            }
             $byId[(int) $row['id']] = ['id' => (int) $row['id'], 'name' => $row['name'], 'category' => $row['category']];
         }
         $result = [];

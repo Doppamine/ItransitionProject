@@ -53,10 +53,17 @@ final class AttributeDefinitionRepository extends ServiceEntityRepository
     }
 
     /** @return list<AttributeDefinition> */
-    public function findSelectable(bool $rulesOnly = false): array
+    public function findSelectable(bool $rulesOnly = false, string $prefix = '', ?int $categoryId = null): array
     {
         $builder = $this->createQueryBuilder('d')->leftJoin('d.category', 'c')->addSelect('c')
             ->orderBy('d.normalizedName', 'ASC')->setMaxResults(100);
+        $prefix = mb_strtolower(trim($prefix), 'UTF-8');
+        if ($prefix !== '') {
+            $builder->andWhere('SUBSTRING(d.normalizedName, 1, LENGTH(:prefix)) = :prefix')->setParameter('prefix', $prefix);
+        }
+        if ($categoryId !== null) {
+            $builder->andWhere('c.id = :category')->setParameter('category', $categoryId);
+        }
         if ($rulesOnly) {
             $builder->andWhere('d.type != :image')->setParameter('image', AttributeType::IMAGE);
         }

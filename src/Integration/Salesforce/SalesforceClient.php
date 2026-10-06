@@ -48,4 +48,27 @@ final class SalesforceClient
 
         return $accessToken;
     }
+
+    public function request(string $method, string $path, ?array $jsonBody = null): array
+    {
+        $accessToken = $this->getAccessToken();
+        $url = rtrim($this->baseUrl, '/').'/services/data/v'.ltrim($this->apiVersion, 'v').'/'.ltrim($path, '/');
+        try {
+            $response = $this->httpClient->request($method, $url, [
+                'max_redirects' => 0,
+                'auth_bearer' => $accessToken,
+                'headers' => ['Accept' => 'application/json'],
+                'json' => $jsonBody,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode < 200 || $statusCode >= 300) {
+                throw new SalesforceApiException();
+            }
+
+            return $response->toArray();
+        } catch (ExceptionInterface) {
+            throw new SalesforceApiException();
+        }
+    }
 }

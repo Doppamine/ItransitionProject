@@ -52,7 +52,7 @@ final class SalesforceClient
     public function request(string $method, string $path, ?array $jsonBody = null): array
     {
         $accessToken = $this->getAccessToken();
-        $url = rtrim($this->baseUrl, '/').'/services/data/v'.ltrim($this->apiVersion, 'v').'/'.ltrim($path, '/');
+        $url = rtrim($this->baseUrl, '/').$this->apiPath($path);
         try {
             $response = $this->httpClient->request($method, $url, [
                 'max_redirects' => 0,
@@ -70,5 +70,10 @@ final class SalesforceClient
         } catch (ExceptionInterface) {
             throw new SalesforceApiException();
         }
+    }
+
+    public function apiPath(string $path): string
+    {
+        return '/services/data/v'.ltrim($this->apiVersion, 'v').'/'.ltrim($path, '/');
     }
 }

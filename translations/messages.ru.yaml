@@ -330,3 +330,22 @@ autosave:
     conflict: Профиль изменён в другом месте. Обновите страницу.
     wait: Подождите сохранения изменений
     invalid: Проверьте значение и попробуйте ещё раз.
+
+salesforce:
+    create: Создать в Salesforce
+    company_name: Название компании
+    job_title: Должность
+    phone: Телефон
+    website: Веб-сайт
+    firstName: Имя
+    lastName: Фамилия
+    location: Местоположение
+    created: Компания и контакт созданы в Salesforce.
+    company_required: Укажите название компании.
+    last_name_required: Укажите фамилию контакта.
+    too_long: 'Используйте не более %limit% символов.'
+    invalid_website: Укажите корректный URL веб-сайта с http или https.
+    invalid_fields: Отправлены неожиданные поля формы.
+    failed: Не удалось выполнить экспорт в Salesforce. Попробуйте ещё раз.
+    nav: Salesforce
+    contact_last_name: Фамилия контакта

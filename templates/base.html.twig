@@ -29,6 +29,7 @@
                         {% endif %}
                         {% if is_granted('ROLE_RECRUITER') or is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_attributes_index') }}">{{ 'nav.attributes'|trans }}</a>{% endif %}
                         {% if is_granted('ROLE_ADMIN') %}<a class="nav-link" href="{{ path('app_admin_users') }}">{{ 'nav.users'|trans }}</a>{% endif %}
+                        <a class="nav-link" href="{{ path('app_account_salesforce') }}">{{ 'salesforce.nav'|trans }}</a>
                         <span class="text-body-secondary">{{ app.user.email }}</span>
                         <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_logout') }}">{{ 'nav.logout'|trans }}</a>
                     {% else %}

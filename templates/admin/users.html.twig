@@ -22,9 +22,9 @@
             </select>
             <button class="btn btn-primary" type="submit">{{ 'admin.apply'|trans }}</button>
         </div>
-        <div class="table-responsive border rounded-3"><table class="table table-hover align-middle mb-0"><thead><tr><th scope="col">{{ 'admin.select'|trans }}</th><th scope="col">{{ 'admin.email'|trans }}</th><th scope="col">{{ 'admin.roles'|trans }}</th><th scope="col">{{ 'admin.blocked'|trans }}</th><th scope="col">{{ 'admin.created'|trans }}</th></tr></thead><tbody>
-            {% for user in users %}<tr><td><input type="checkbox" name="ids[]" value="{{ user.id }}" class="form-check-input" aria-label="{{ 'admin.select_user'|trans({'%email%': user.email}) }}"></td><td>{{ user.email }}</td><td>{{ user.roles|map(role => ('admin.role.' ~ role)|trans)|join(', ') }}</td><td>{{ user.blocked ? 'common.yes'|trans : 'common.no'|trans }}</td><td>{{ user.createdAt|date('Y-m-d') }}</td></tr>
-            {% else %}<tr><td colspan="5" class="text-body-secondary py-4">{{ 'admin.empty'|trans }}</td></tr>{% endfor %}
+        <div class="table-responsive border rounded-3"><table class="table table-hover align-middle mb-0"><thead><tr><th scope="col">{{ 'admin.select'|trans }}</th><th scope="col">{{ 'admin.email'|trans }}</th><th scope="col">{{ 'admin.roles'|trans }}</th><th scope="col">{{ 'admin.blocked'|trans }}</th><th scope="col">{{ 'admin.created'|trans }}</th><th scope="col">{{ 'admin.actions'|trans }}</th></tr></thead><tbody>
+            {% for user in users %}<tr><td><input type="checkbox" name="ids[]" value="{{ user.id }}" class="form-check-input" aria-label="{{ 'admin.select_user'|trans({'%email%': user.email}) }}"></td><td>{{ user.email }}</td><td>{{ user.roles|map(role => ('admin.role.' ~ role)|trans)|join(', ') }}</td><td>{{ user.blocked ? 'common.yes'|trans : 'common.no'|trans }}</td><td>{{ user.createdAt|date('Y-m-d') }}</td><td><a class="btn btn-outline-primary btn-sm" href="{{ path('app_admin_user_salesforce', {id: user.id}) }}">{{ 'salesforce.create'|trans }}</a></td></tr>
+            {% else %}<tr><td colspan="6" class="text-body-secondary py-4">{{ 'admin.empty'|trans }}</td></tr>{% endfor %}
         </tbody></table></div>
         <p class="small text-body-secondary mt-2">{{ 'admin.limit'|trans }}</p>
     </form>

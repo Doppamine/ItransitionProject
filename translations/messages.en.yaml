@@ -330,3 +330,22 @@ autosave:
     conflict: Profile changed elsewhere. Reload to continue.
     wait: Unsaved changes — wait for save
     invalid: Check this value and try again.
+
+salesforce:
+    create: Create in Salesforce
+    company_name: Company name
+    job_title: Job title
+    phone: Phone
+    website: Website
+    firstName: First name
+    lastName: Last name
+    location: Location
+    created: Account and Contact created in Salesforce.
+    company_required: Enter a company name.
+    last_name_required: Enter a Contact last name.
+    too_long: 'Use at most %limit% characters.'
+    invalid_website: Enter a valid http or https website URL.
+    invalid_fields: Unexpected form fields were submitted.
+    failed: Salesforce export could not be completed. Please try again.
+    nav: Salesforce
+    contact_last_name: Contact last name

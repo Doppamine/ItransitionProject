@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'salesforce.create'|trans }} · Itransition Project{% endblock %}
+
+{% block body %}
+<main class="container py-4 py-lg-5">
+    <h1 class="h2 mb-4">{{ 'salesforce.create'|trans }}</h1>
+    {% for message in app.flashes('success') %}<div class="alert alert-success" role="status">{{ message|trans }}</div>{% endfor %}
+    <p>{{ targetUser.email }}</p>
+    <dl class="row">
+        {% for field, value in details %}
+            {% if value is not null %}
+                <dt class="col-sm-3">{{ ('salesforce.' ~ field)|trans }}</dt><dd class="col-sm-9">{{ value }}</dd>
+            {% endif %}
+        {% endfor %}
+    </dl>
+    <div class="card"><div class="card-body">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_row(form.companyName) }}
+        {% if form.lastName is defined %}{{ form_row(form.lastName) }}{% endif %}
+        {{ form_row(form.jobTitle) }}
+        {{ form_row(form.phone) }}
+        {{ form_row(form.website) }}
+        <button class="btn btn-primary mt-4" type="submit">{{ 'salesforce.create'|trans }}</button>
+        {{ form_end(form) }}
+    </div></div>
+</main>
+{% endblock %}

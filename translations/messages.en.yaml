@@ -349,3 +349,12 @@ salesforce:
     failed: Salesforce export could not be completed. Please try again.
     nav: Salesforce
     contact_last_name: Contact last name
+    job_title_required: Enter a job title.
+    phone_required: Enter a phone number.
+    website_required: Enter a website URL.
+    profile_required: 'Complete the "%field%" field in your Profile before exporting.'
+    contact_first_name: Contact first name
+    contact_location: Contact location
+    first_name_required: Enter a Contact first name.
+    location_required: Enter a Contact location.
+    profile_too_long: 'Shorten the "%field%" field in your Profile to at most %limit% characters before exporting.'

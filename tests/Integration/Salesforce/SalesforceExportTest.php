@@ -164,42 +164,57 @@ final class SalesforceExportTest extends WebTestCase
         self::assertSame($version, $stored['version']);
     }
 
-    #[DataProvider('missingProfileLastNames')]
-    public function testUserWithoutUsableProfileLastNameCanExportWithFallback(bool $hasProfile): void
+    public function testUserWithoutProfileCanExportWithCompleteTrimmedFallbackContactDetails(): void
     {
         $this->user->setRoles(['ROLE_RECRUITER']);
         $this->em->flush();
         $this->client->loginUser($this->user);
-        if ($hasProfile) {
-            $this->profile(['first name' => ' ', 'last name' => " \t", 'location' => "\n"]);
-        }
-        $this->expectComposite(['Name' => 'Example Company'], [
-            'AccountId' => '@{account.id}', 'LastName' => 'Fallback', 'Email' => $this->user->getEmail(),
+        $this->expectComposite(['Name' => 'Example Company', 'Website' => 'https://example.com'], [
+            'AccountId' => '@{account.id}', 'FirstName' => 'Grace', 'LastName' => 'Fallback',
+            'Email' => $this->user->getEmail(), 'Title' => 'Engineer', 'Phone' => '+44 1234', 'MailingCity' => 'Paris',
         ]);
 
-        $this->submit('/account/salesforce', [
-            'companyName' => ' Example Company ', 'lastName' => ' Fallback ',
-            'jobTitle' => ' ', 'phone' => '', 'website' => ' ',
+        $this->submit('/account/salesforce', $this->additionalData() + [
+            'firstName' => ' Grace ', 'lastName' => ' Fallback ', 'location' => ' Paris ',
         ]);
 
         self::assertResponseRedirects('/account/salesforce', 303);
         self::assertSame(2, $this->httpClient->getRequestsCount());
         $this->client->followRedirect();
-        self::assertSelectorExists('input[name="salesforce_export[lastName]"][required]');
+        foreach (['firstName' => 40, 'lastName' => 80, 'location' => 40] as $field => $limit) {
+            self::assertSelectorExists('input[name="salesforce_export['.$field.']"][required][maxlength="'.$limit.'"]');
+        }
     }
 
-    public static function missingProfileLastNames(): iterable
+    #[DataProvider('incompleteFallbackFields')]
+    public function testRequiresCompleteFallbackContactDetailsBeforeSalesforceHttp(string $field, ?string $value, string $message): void
     {
-        yield 'no Profile' => [false];
-        yield 'blank built-ins' => [true];
+        $this->submit('/account/salesforce', array_replace($this->additionalData() + [
+            'firstName' => 'Grace', 'lastName' => 'Doe', 'location' => 'Paris',
+        ], [$field => $value]));
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', $message);
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    public static function incompleteFallbackFields(): iterable
+    {
+        foreach (['firstName' => 'Enter a Contact first name.', 'lastName' => 'Enter a Contact last name.', 'location' => 'Enter a Contact location.'] as $field => $message) {
+            foreach (['blank' => '', 'whitespace' => " \t\n ", 'missing' => null] as $case => $value) {
+                yield $field.' '.$case => [$field, $value, $message];
+            }
+        }
+        yield 'first name length' => ['firstName', str_repeat('a', 41), 'Use at most 40 characters.'];
+        yield 'last name length' => ['lastName', str_repeat('a', 81), 'Use at most 80 characters.'];
+        yield 'location length' => ['location', str_repeat('a', 41), 'Use at most 40 characters.'];
     }
 
     #[DataProvider('invalidSubmissions')]
     public function testRejectsInvalidSubmissionBeforeSalesforceHttp(array $changes, string $message): void
     {
-        $this->submit('/account/salesforce', array_replace([
-            'companyName' => 'Example Company', 'lastName' => 'Doe',
-            'jobTitle' => '', 'phone' => '', 'website' => '',
+        $this->submit('/account/salesforce', array_replace($this->additionalData() + [
+            'firstName' => 'Grace', 'lastName' => 'Doe', 'location' => 'Paris',
         ], $changes));
 
         self::assertSame(422, $this->client->getResponse()->getStatusCode());
@@ -222,6 +237,133 @@ final class SalesforceExportTest extends WebTestCase
         yield 'website length' => [['website' => 'https://example.com/'.str_repeat('a', 256)], 'Use at most 255 characters.'];
     }
 
+    #[DataProvider('requiredAdditionalFields')]
+    public function testRequiresCompleteAdditionalFieldsBeforeSalesforceHttp(string $field, ?string $value, string $message): void
+    {
+        $this->profile(['first name' => 'Ada', 'last name' => 'Lovelace', 'location' => 'London']);
+        $this->submit('/account/salesforce', array_replace($this->additionalData(), [$field => $value]));
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', $message);
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    public static function requiredAdditionalFields(): iterable
+    {
+        foreach (['companyName' => 'Enter a company name.', 'jobTitle' => 'Enter a job title.', 'phone' => 'Enter a phone number.', 'website' => 'Enter a website URL.'] as $field => $message) {
+            foreach (['blank' => '', 'whitespace' => " \t\n ", 'missing' => null] as $case => $value) {
+                yield $field.' '.$case => [$field, $value, $message];
+            }
+        }
+    }
+
+    public function testAdditionalFieldsHaveRequiredHtmlAttributes(): void
+    {
+        $this->client->request('GET', '/account/salesforce');
+
+        self::assertResponseIsSuccessful();
+        foreach (['companyName' => 255, 'jobTitle' => 128, 'phone' => 40, 'website' => 255] as $field => $limit) {
+            self::assertSelectorExists('input[name="salesforce_export['.$field.']"][required][maxlength="'.$limit.'"]');
+        }
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    #[DataProvider('incompleteProfileFields')]
+    public function testRequiresCompleteReadOnlyProfileBeforeSalesforceHttp(string $name, ?string $value, string $label): void
+    {
+        $texts = ['first name' => 'Ada', 'last name' => 'Lovelace', 'location' => 'London'];
+        if ($value === null) {
+            unset($texts[$name]);
+        } else {
+            $texts[$name] = $value;
+        }
+        $this->profile($texts);
+        $this->submit('/account/salesforce', $this->additionalData());
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Complete the "'.$label.'" field in your Profile before exporting.');
+        foreach (['firstName', 'lastName', 'location'] as $field) {
+            self::assertSelectorNotExists('input[name="salesforce_export['.$field.']"]');
+        }
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    public static function incompleteProfileFields(): iterable
+    {
+        foreach (['first name' => 'First name', 'last name' => 'Last name', 'location' => 'Location'] as $name => $label) {
+            yield $name.' unset' => [$name, null, $label];
+            yield $name.' whitespace' => [$name, " \t\n", $label];
+        }
+    }
+
+    #[DataProvider('oversizedProfileFields')]
+    public function testRejectsProfileFieldsExceedingSalesforceLimitsBeforeHttp(string $name, string $value, string $label, int $limit): void
+    {
+        $this->profile(array_replace(['first name' => 'Ada', 'last name' => 'Lovelace', 'location' => 'London'], [$name => $value]));
+        $this->submit('/account/salesforce', $this->additionalData());
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Shorten the "'.$label.'" field in your Profile to at most '.$limit.' characters before exporting.');
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    public static function oversizedProfileFields(): iterable
+    {
+        yield 'first name' => ['first name', str_repeat('a', 41), 'First name', 40];
+        yield 'last name' => ['last name', str_repeat('a', 81), 'Last name', 80];
+        yield 'location' => ['location', str_repeat('a', 41), 'Location', 40];
+    }
+
+    public function testEmptyPostIsRejectedWithoutSalesforceHttp(): void
+    {
+        $this->client->request('POST', '/account/salesforce');
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Unexpected form fields were submitted.');
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    #[DataProvider('staleSuccessFailures')]
+    public function testFailedCurrentSubmissionDoesNotShowPreviousSuccess(string $failure): void
+    {
+        $this->profile(['first name' => 'Ada', 'last name' => 'Lovelace', 'location' => 'London']);
+        $this->expectComposite(['Name' => 'Example Company', 'Website' => 'https://example.com'], [
+            'AccountId' => '@{account.id}', 'FirstName' => 'Ada', 'LastName' => 'Lovelace',
+            'Email' => $this->user->getEmail(), 'Title' => 'Engineer', 'Phone' => '+44 1234', 'MailingCity' => 'London',
+        ]);
+        $this->client->request('GET', '/account/salesforce');
+        $token = $this->client->getCrawler()->filter('input[name="salesforce_export[_token]"]')->attr('value');
+        $data = $this->additionalData() + ['_token' => $token];
+        $this->client->request('POST', '/account/salesforce', ['salesforce_export' => $data]);
+        self::assertResponseRedirects('/account/salesforce', 303);
+        self::assertSame(2, $this->httpClient->getRequestsCount());
+
+        if ($failure === 'validation') {
+            $data['jobTitle'] = ' ';
+        } else {
+            $this->httpClient->setResponseFactory(match ($failure) {
+                'authentication' => [new MockResponse('private details', ['http_code' => 401])],
+                'API' => [new MockResponse('{"access_token":"web-test-token"}'), new MockResponse('private details', ['http_code' => 500])],
+                'composite' => [new MockResponse('{"access_token":"web-test-token"}'), new MockResponse('{"compositeResponse":[]}')],
+            });
+        }
+        $this->client->request('POST', '/account/salesforce', ['salesforce_export' => $data]);
+
+        self::assertSame($failure === 'validation' ? 422 : 503, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', $failure === 'validation' ? 'Enter a job title.' : 'Salesforce export could not be completed.');
+        self::assertSelectorNotExists('[role="status"]');
+        self::assertSelectorTextNotContains('main', 'Account and Contact created in Salesforce.');
+        self::assertSame(match ($failure) { 'validation' => 2, 'authentication' => 3, default => 4 }, $this->httpClient->getRequestsCount());
+        $this->client->request('GET', '/account/salesforce');
+        self::assertSelectorNotExists('[role="status"]');
+    }
+
+    public static function staleSuccessFailures(): iterable
+    {
+        yield 'validation' => ['validation'];
+        yield from self::salesforceFailures();
+    }
+
     public function testInvalidCsrfCannotExport(): void
     {
         $this->client->request('POST', '/account/salesforce', ['salesforce_export' => [
@@ -237,13 +379,13 @@ final class SalesforceExportTest extends WebTestCase
         $other = $this->anotherUser();
         $this->profile(['first name' => 'Other', 'last name' => 'Target', 'location' => 'Elsewhere'], $other);
         $this->profile(['first name' => 'Ada', 'last name' => 'Self', 'location' => 'London']);
-        $this->expectComposite(['Name' => 'Example Company'], [
+        $this->expectComposite(['Name' => 'Example Company', 'Website' => 'https://example.com'], [
             'AccountId' => '@{account.id}', 'FirstName' => 'Ada', 'LastName' => 'Self',
-            'Email' => $this->user->getEmail(), 'MailingCity' => 'London',
+            'Email' => $this->user->getEmail(), 'Title' => 'Engineer', 'Phone' => '+44 1234', 'MailingCity' => 'London',
         ]);
 
         $this->submit('/account/salesforce?id='.$other->getId().'&user='.$other->getId().'&targetUser='.$other->getId(),
-            ['companyName' => 'Example Company'], [
+            $this->additionalData(), [
                 'id' => $other->getId(), 'user' => $other->getId(), 'targetUser' => $other->getId(),
                 'email' => $other->getEmail(), 'firstName' => 'Forged', 'lastName' => 'Forged', 'location' => 'Forged',
             ]);
@@ -255,16 +397,24 @@ final class SalesforceExportTest extends WebTestCase
         self::assertSelectorTextNotContains('main', $other->getEmail());
     }
 
-    public function testCannotSubmitFallbackOverrideOfBuiltInLastName(): void
+    #[DataProvider('readOnlyProfileFields')]
+    public function testCannotSubmitFallbackOverrideOfBuiltInContactFields(string $field): void
     {
-        $this->profile(['last name' => 'Read Only']);
+        $this->profile(['first name' => 'Ada', 'last name' => 'Read Only', 'location' => 'London']);
 
-        $this->submit('/account/salesforce', ['companyName' => 'Example Company', 'lastName' => 'Forged']);
+        $this->submit('/account/salesforce', $this->additionalData() + [$field => 'Forged']);
 
         self::assertSame(422, $this->client->getResponse()->getStatusCode());
         self::assertSelectorTextContains('main', 'Read Only');
-        self::assertSelectorNotExists('input[name="salesforce_export[lastName]"]');
+        self::assertSelectorNotExists('input[name="salesforce_export['.$field.']"]');
         self::assertSame(0, $this->httpClient->getRequestsCount());
+    }
+
+    public static function readOnlyProfileFields(): iterable
+    {
+        yield 'first name' => ['firstName'];
+        yield 'last name' => ['lastName'];
+        yield 'location' => ['location'];
     }
 
     public function testAdminExportsRouteSelectedUserWithoutImpersonation(): void
@@ -276,12 +426,12 @@ final class SalesforceExportTest extends WebTestCase
         $this->em->flush();
         $this->client->loginUser($this->user);
         $path = '/admin/users/'.$other->getId().'/salesforce';
-        $this->expectComposite(['Name' => 'Example Company'], [
+        $this->expectComposite(['Name' => 'Example Company', 'Website' => 'https://example.com'], [
             'AccountId' => '@{account.id}', 'FirstName' => 'Taylor', 'LastName' => 'Target',
-            'Email' => $other->getEmail(), 'MailingCity' => 'Toronto',
+            'Email' => $other->getEmail(), 'Title' => 'Engineer', 'Phone' => '+44 1234', 'MailingCity' => 'Toronto',
         ]);
 
-        $this->submit($path.'?id='.$this->user->getId(), ['companyName' => 'Example Company'], ['id' => $this->user->getId()]);
+        $this->submit($path.'?id='.$this->user->getId(), $this->additionalData(), ['id' => $this->user->getId()]);
 
         self::assertResponseRedirects($path, 303);
         self::assertSame(2, $this->httpClient->getRequestsCount());
@@ -308,13 +458,13 @@ final class SalesforceExportTest extends WebTestCase
         $this->httpClient->setResponseFactory($responses);
 
         $this->submit('/account/salesforce', [
-            'companyName' => 'Example Company', 'lastName' => 'Doe', 'jobTitle' => 'Engineer',
+            'companyName' => 'Example Company', 'firstName' => 'Grace', 'lastName' => 'Doe', 'location' => 'Paris', 'jobTitle' => 'Engineer',
             'phone' => '+44 1234', 'website' => 'https://example.com',
         ]);
 
         self::assertSame(503, $this->client->getResponse()->getStatusCode());
         self::assertSelectorTextContains('main', 'Salesforce export could not be completed. Please try again.');
-        foreach (['companyName' => 'Example Company', 'lastName' => 'Doe', 'jobTitle' => 'Engineer', 'phone' => '+44 1234', 'website' => 'https://example.com'] as $field => $value) {
+        foreach (['companyName' => 'Example Company', 'firstName' => 'Grace', 'lastName' => 'Doe', 'location' => 'Paris', 'jobTitle' => 'Engineer', 'phone' => '+44 1234', 'website' => 'https://example.com'] as $field => $value) {
             self::assertSelectorExists('input[name="salesforce_export['.$field.']"][value="'.$value.'"]');
         }
         $content = $this->client->getResponse()->getContent();
@@ -380,7 +530,7 @@ final class SalesforceExportTest extends WebTestCase
         self::assertSelectorTextContains('h1', 'Создать в Salesforce');
         self::assertSelectorTextContains('label[for="salesforce_export_companyName"]', 'Название компании');
         self::assertSelectorTextContains('label[for="salesforce_export_lastName"]', 'Фамилия контакта');
-        foreach (['companyName' => 255, 'lastName' => 80, 'jobTitle' => 128, 'phone' => 40, 'website' => 255] as $field => $limit) {
+        foreach (['companyName' => 255, 'firstName' => 40, 'lastName' => 80, 'location' => 40, 'jobTitle' => 128, 'phone' => 40, 'website' => 255] as $field => $limit) {
             self::assertSelectorExists('input[name="salesforce_export['.$field.']"][maxlength="'.$limit.'"]');
         }
 
@@ -390,32 +540,73 @@ final class SalesforceExportTest extends WebTestCase
         self::assertSame(0, $this->httpClient->getRequestsCount());
 
         $this->httpClient->setResponseFactory(new MockResponse('private Salesforce details', ['http_code' => 401]));
-        $this->submit('/account/salesforce', ['companyName' => 'Компания', 'lastName' => 'Фамилия']);
+        $this->submit('/account/salesforce', array_replace($this->additionalData(), ['companyName' => 'Компания', 'firstName' => 'Имя', 'lastName' => 'Фамилия', 'location' => 'Город']));
         self::assertSame(503, $this->client->getResponse()->getStatusCode());
         self::assertSelectorTextContains('main', 'Не удалось выполнить экспорт в Salesforce.');
 
-        $this->expectComposite(['Name' => 'Компания'], ['AccountId' => '@{account.id}', 'LastName' => 'Фамилия', 'Email' => $this->user->getEmail()]);
-        $this->submit('/account/salesforce', ['companyName' => 'Компания', 'lastName' => 'Фамилия']);
+        $this->expectComposite(['Name' => 'Компания', 'Website' => 'https://example.com'], [
+            'AccountId' => '@{account.id}', 'FirstName' => 'Имя', 'LastName' => 'Фамилия', 'Email' => $this->user->getEmail(),
+            'Title' => 'Engineer', 'Phone' => '+44 1234', 'MailingCity' => 'Город',
+        ]);
+        $this->submit('/account/salesforce', array_replace($this->additionalData(), ['companyName' => 'Компания', 'firstName' => 'Имя', 'lastName' => 'Фамилия', 'location' => 'Город']));
         self::assertResponseRedirects('/account/salesforce', 303);
         $this->client->followRedirect();
         self::assertSelectorTextContains('[role="status"]', 'Компания и контакт созданы в Salesforce.');
         self::assertSame(3, $this->httpClient->getRequestsCount());
     }
 
-    public function testAcceptsFieldLengthBoundariesAndCountsUnicodeCharacters(): void
+    #[DataProvider('contactSources')]
+    public function testAcceptsFieldLengthBoundariesAndCountsUnicodeCharacters(bool $hasProfile): void
     {
         $company = str_repeat('К', 255);
         $lastName = str_repeat('Ф', 80);
         $title = str_repeat('Д', 128);
         $phone = str_repeat('1', 40);
+        $firstName = str_repeat('И', 40);
+        $location = str_repeat('Г', 40);
         $this->expectComposite(['Name' => $company, 'Website' => 'http://example.com'], [
-            'AccountId' => '@{account.id}', 'LastName' => $lastName, 'Email' => $this->user->getEmail(), 'Title' => $title, 'Phone' => $phone,
+            'AccountId' => '@{account.id}', 'FirstName' => $firstName, 'LastName' => $lastName, 'Email' => $this->user->getEmail(), 'Title' => $title, 'Phone' => $phone, 'MailingCity' => $location,
         ]);
 
-        $this->submit('/account/salesforce', ['companyName' => $company, 'lastName' => $lastName, 'jobTitle' => $title, 'phone' => $phone, 'website' => 'http://example.com']);
+        $data = ['companyName' => $company, 'jobTitle' => $title, 'phone' => $phone, 'website' => 'http://example.com'];
+        if ($hasProfile) {
+            $this->profile(['first name' => $firstName, 'last name' => $lastName, 'location' => $location]);
+        } else {
+            $data += ['firstName' => $firstName, 'lastName' => $lastName, 'location' => $location];
+        }
+        $this->submit('/account/salesforce', $data);
 
         self::assertResponseRedirects('/account/salesforce', 303);
         self::assertSame(2, $this->httpClient->getRequestsCount());
+    }
+
+    public static function contactSources(): iterable
+    {
+        yield 'Profile' => [true];
+        yield 'no Profile' => [false];
+    }
+
+    public function testRussianRequiredContactAndAdditionalValidationMessages(): void
+    {
+        $this->user->setLocale('ru');
+        $this->em->flush();
+        $this->client->loginUser($this->user);
+        $this->submit('/account/salesforce', array_fill_keys(['companyName', 'jobTitle', 'phone', 'website', 'firstName', 'lastName', 'location'], " \t\n"));
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        foreach (['Укажите название компании.', 'Укажите должность.', 'Укажите номер телефона.', 'Укажите URL веб-сайта.',
+            'Укажите имя контакта.', 'Укажите фамилию контакта.', 'Укажите местоположение контакта.'] as $message) {
+            self::assertSelectorTextContains('main', $message);
+        }
+        self::assertSame(0, $this->httpClient->getRequestsCount());
+
+        $this->profile([], $this->em->find(User::class, $this->user->getId()));
+        $this->submit('/account/salesforce', $this->additionalData());
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        foreach (['Имя', 'Фамилия', 'Местоположение'] as $label) {
+            self::assertSelectorTextContains('main', 'Заполните поле «'.$label.'» в профиле перед экспортом.');
+        }
+        self::assertSame(0, $this->httpClient->getRequestsCount());
     }
 
     private function profile(array $texts, ?User $user = null): Profile
@@ -432,6 +623,11 @@ final class SalesforceExportTest extends WebTestCase
         $this->em->flush();
 
         return $profile;
+    }
+
+    private function additionalData(): array
+    {
+        return ['companyName' => 'Example Company', 'jobTitle' => 'Engineer', 'phone' => '+44 1234', 'website' => 'https://example.com'];
     }
 
     private function expectComposite(array $account, array $contact): void

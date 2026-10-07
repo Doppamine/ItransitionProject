@@ -10,6 +10,7 @@ use App\Entity\Profile;
 use App\Entity\User;
 use App\Enum\AttributeType;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -277,6 +278,52 @@ final class AttributeLibraryPageTest extends WebTestCase
         $this->client->request('POST', $path, ['attribute_definition' => ['name' => 'No CSRF', 'category' => (string) $this->category->getId(), 'description' => '', 'type' => 'string', 'version' => (string) $definition->getVersion(), '_token' => 'bad']]);
         self::assertResponseStatusCodeSame(422);
         self::assertSame('Current '.substr($definition->getName(), -8), $this->storedDefinition($definition)['name']);
+    }
+
+    #[DataProvider('missingRequiredAttributeChoices')]
+    public function testMissingRequiredAttributeChoiceCannotCreateOrUpdate(bool $editing, string $field, string $message): void
+    {
+        $definition = $editing ? $this->definition('Unchanged attribute', AttributeType::STRING) : null;
+        $this->em->flush();
+        $path = $definition === null ? '/attributes/new' : '/attributes/'.$definition->getId().'/edit';
+        $this->client->request('GET', $path);
+        $data = $this->client->getCrawler()->selectButton('Save attribute')->form()->getPhpValues()['attribute_definition'];
+        $data = array_replace($data, ['name' => 'Rejected attribute', 'category' => (string) $this->category->getId(), 'type' => 'string']);
+        unset($data[$field]);
+
+        $this->client->request('POST', $path, ['attribute_definition' => $data]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', $message);
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM attribute_definition WHERE name = ?', ['Rejected attribute']));
+        if ($definition !== null) {
+            self::assertSame($definition->getName(), $this->storedDefinition($definition)['name']);
+        }
+    }
+
+    public static function missingRequiredAttributeChoices(): iterable
+    {
+        foreach (['create' => false, 'edit' => true] as $operation => $editing) {
+            yield $operation.' category' => [$editing, 'category', 'Choose a category.'];
+            yield $operation.' type' => [$editing, 'type', 'Choose an attribute type.'];
+        }
+    }
+
+    public function testAttributeNameLengthAlsoChecksStoredNormalizedName(): void
+    {
+        $name = str_repeat('İ', 128);
+        $this->submitDefinition('/attributes/new', $name, AttributeType::STRING);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Enter a name of at most 255 characters.');
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM attribute_definition WHERE name = ?', [$name]));
+
+        $this->category = $this->em->find(AttributeCategory::class, $this->category->getId());
+        $definition = $this->definition('Unchanged name', AttributeType::STRING);
+        $this->em->flush();
+        $this->submitDefinition('/attributes/'.$definition->getId().'/edit', $name, AttributeType::STRING);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Enter a name of at most 255 characters.');
+        self::assertSame($definition->getName(), $this->storedDefinition($definition)['name']);
     }
 
     private function definition(string $name, AttributeType $type, ?AttributeCategory $category = null): AttributeDefinition

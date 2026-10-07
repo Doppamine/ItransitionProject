@@ -102,6 +102,20 @@ final class ProfileValueMapperTest extends TestCase
         (new ProfileValueMapper())->apply($this->value(AttributeType::IMAGE), 'file-key');
     }
 
+    #[DataProvider('datesContainingNullBytes')]
+    public function testMalformedDateRaisesValidationException(AttributeType $type, mixed $input): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        (new ProfileValueMapper())->apply($this->value($type), $input);
+    }
+
+    public static function datesContainingNullBytes(): iterable
+    {
+        yield 'date' => [AttributeType::DATE, "2025-01\0-01"];
+        yield 'period start' => [AttributeType::PERIOD, ['start' => "2025-01\0-01", 'end' => '2025-12-31']];
+        yield 'period end' => [AttributeType::PERIOD, ['start' => '2025-01-01', 'end' => "2025-12\0-31"]];
+    }
+
     private function value(AttributeType $type): \App\Entity\ProfileAttributeValue
     {
         $definition = new AttributeDefinition(new AttributeCategory('Skills'), 'Value', $type);

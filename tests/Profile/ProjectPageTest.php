@@ -126,6 +126,21 @@ final class ProjectPageTest extends WebTestCase
         self::assertSame(0, (int) $this->em->getConnection()->fetchOne("SELECT COUNT(*) FROM tag WHERE normalized_name IN ('php', 'symfony')"));
     }
 
+    public function testProjectTagLengthLimitIsEnforcedBeforeCreatingOrEditing(): void
+    {
+        $tags = implode(',', array_fill(0, 25, str_repeat('a', 100)));
+        $this->submitProject('/profile/projects/new', 'Rejected', '2025-01-01', '', '', $tags);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Technology tags must be at most 2500 characters.');
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM candidate_project WHERE profile_id = ?', [$this->profile->getId()]));
+
+        $id = $this->createProject('Unchanged', 'PHP');
+        $this->submitProject('/profile/projects/'.$id.'/edit', 'Rejected', '2025-01-01', '', '', $tags);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Technology tags must be at most 2500 characters.');
+        self::assertSame('Unchanged', $this->em->getConnection()->fetchOne('SELECT name FROM candidate_project WHERE id = ?', [$id]));
+    }
+
     public function testTagsAreReusedAndCaseInsensitiveDuplicatesCollapse(): void
     {
         $first = $this->createProject('First', 'Symfony, symfony, SYMFONY');

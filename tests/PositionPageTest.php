@@ -16,6 +16,7 @@ use App\Enum\AttributeType;
 use App\Enum\PositionAccessType;
 use App\Repository\AttributeDefinitionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -206,6 +207,86 @@ final class PositionPageTest extends WebTestCase
         $this->client->loginUser($this->recruiter);
         $this->client->request('GET', '/attributes/'.$template->getId().'/edit');
         self::assertSelectorExists('select[name="attribute_definition[type]"][disabled]');
+    }
+
+    #[DataProvider('missingRequiredPositionFields')]
+    public function testMissingRequiredPositionFieldCannotCreateOrUpdate(bool $editing, string $field, string $message): void
+    {
+        $position = $editing ? $this->position('Unchanged role', PositionAccessType::PUBLIC) : null;
+        $this->em->flush();
+        $this->client->loginUser($this->recruiter);
+        $path = $position === null ? '/positions/new' : '/positions/'.$position->getId().'/edit';
+        $this->client->request('GET', $path);
+        $data = $this->client->getCrawler()->selectButton('Save position')->form()->getPhpValues()['position'];
+        $data = array_replace($data, ['title' => 'Rejected role', 'accessType' => 'public', 'maxProjects' => '0']);
+        unset($data[$field]);
+
+        $this->client->request('POST', $path, ['position' => $data]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', $message);
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM position WHERE title = ?', ['Rejected role']));
+        if ($position !== null) {
+            self::assertSame($position->getTitle(), $this->em->getConnection()->fetchOne('SELECT title FROM position WHERE id = ?', [$position->getId()]));
+        }
+    }
+
+    public static function missingRequiredPositionFields(): iterable
+    {
+        foreach (['create' => false, 'edit' => true] as $operation => $editing) {
+            yield $operation.' access type' => [$editing, 'accessType', 'Choose an access type.'];
+            yield $operation.' project limit' => [$editing, 'maxProjects', 'Enter a maximum number of projects.'];
+        }
+    }
+
+    public function testMissingAccessRuleOperatorIsRejectedBeforeSaving(): void
+    {
+        $position = $this->position('Unchanged rules', PositionAccessType::RESTRICTED);
+        $definition = $this->definition('Required operator', AttributeType::STRING);
+        $this->em->flush();
+        $this->client->loginUser($this->recruiter);
+        $path = '/positions/'.$position->getId().'/rules/new?definition='.$definition->getId();
+        $this->client->request('GET', $path);
+        $data = $this->client->getCrawler()->filter('main form')->form()->getPhpValues()['position_access_rule'];
+        $data['textValue'] = 'Expected';
+        unset($data['operator']);
+
+        $this->client->request('POST', $path, ['position_access_rule' => $data]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Choose an operator.');
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM position_access_rule WHERE position_id = ?', [$position->getId()]));
+    }
+
+    public function testProjectLimitMustFitDatabaseIntegerRange(): void
+    {
+        $this->client->loginUser($this->recruiter);
+        $this->client->request('GET', '/positions/new');
+        $data = $this->client->getCrawler()->selectButton('Save position')->form()->getPhpValues()['position'];
+        $data = array_replace($data, ['title' => 'Rejected large limit', 'accessType' => 'public', 'maxProjects' => '2147483648']);
+        $this->client->request('POST', '/positions/new', ['position' => $data]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSelectorTextContains('main', 'Maximum projects is too large.');
+        self::assertSame(0, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM position WHERE title = ?', ['Rejected large limit']));
+    }
+
+    public function testAttributeOrderMustFitDatabaseIntegerRangeBeforeAddOrMove(): void
+    {
+        $position = $this->position('Order range', PositionAccessType::PUBLIC);
+        $definition = $this->definition('New order', AttributeType::STRING);
+        $existing = $position->addAttribute($this->definition('Existing order', AttributeType::STRING), 10);
+        $this->em->flush();
+        $this->client->loginUser($this->recruiter);
+        $data = ['_token' => $this->csrfToken('position_child_'.$position->getId()), 'version' => (string) $position->getVersion(),
+            'definition' => (string) $definition->getId(), 'sortOrder' => '2147483648'];
+
+        $this->client->request('POST', '/positions/'.$position->getId().'/attributes/add', $data);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        $this->client->request('POST', '/positions/'.$position->getId().'/attributes/'.$existing->getId().'/order', $data);
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSame(10, $this->em->getConnection()->fetchOne('SELECT sort_order FROM position_attribute WHERE id = ?', [$existing->getId()]));
+        self::assertSame(1, (int) $this->em->getConnection()->fetchOne('SELECT COUNT(*) FROM position_attribute WHERE position_id = ?', [$position->getId()]));
     }
 
     private function position(string $title, PositionAccessType $access): Position

@@ -184,6 +184,21 @@ final class ProfilePageTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testDateWithNullByteIsRejectedWithoutPersistingEarlierChanges(): void
+    {
+        $date = $this->definition('Invalid date', AttributeType::DATE);
+        $first = $this->entityManager->getRepository(AttributeDefinition::class)->findOneBy(['normalizedName' => 'first name']);
+        $this->profile->selectAttribute($date);
+        $this->profile->getValueFor($first)->setText('Original');
+        $this->entityManager->flush();
+
+        $this->autosave($this->profile->getVersion(), [(string) $first->getId() => 'Rejected', (string) $date->getId() => "2025-01\0-01"]);
+
+        self::assertSame(422, $this->client->getResponse()->getStatusCode());
+        self::assertSame('Original', $this->storedText($first));
+        self::assertStringNotContainsString('ValueError', $this->client->getResponse()->getContent());
+    }
+
     public function testAutosaveRejectsUnselectedAttribute(): void
     {
         $definition = $this->definition('Unselected', AttributeType::STRING);

@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -53,11 +54,14 @@ final class AttributeLibraryController extends AbstractController
             'categories' => $this->categoryChoices($categories, $labels),
         ]);
         $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            $this->validateRequiredChoices($form);
+        }
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $category = $this->selectedCategory($categories, $data['category'] ?? null);
             $name = trim((string) ($data['name'] ?? ''));
-            if ($name === '' || mb_strlen($name) > 255) {
+            if ($name === '' || mb_strlen($name) > 255 || mb_strlen(mb_strtolower($name, 'UTF-8')) > 255) {
                 $form->get('name')->addError(new FormError('Enter a name of at most 255 characters.'));
             } elseif ($definitions->findOneBy(['normalizedName' => mb_strtolower($name, 'UTF-8')]) !== null) {
                 $form->get('name')->addError(new FormError('An attribute with this name already exists.'));
@@ -97,6 +101,7 @@ final class AttributeLibraryController extends AbstractController
         $form->handleRequest($request);
         $status = Response::HTTP_OK;
         if ($form->isSubmitted()) {
+            $this->validateRequiredChoices($form);
             $status = Response::HTTP_UNPROCESSABLE_ENTITY;
             $raw = $request->request->all('attribute_definition');
             if ($definition->isBuiltIn() && (
@@ -124,7 +129,7 @@ final class AttributeLibraryController extends AbstractController
                         $status = Response::HTTP_CONFLICT;
                     }
                 }
-                if ($name === '' || mb_strlen($name) > 255) {
+                if ($name === '' || mb_strlen($name) > 255 || mb_strlen(mb_strtolower($name, 'UTF-8')) > 255) {
                     $form->get('name')->addError(new FormError('Enter a name of at most 255 characters.'));
                 } elseif ($name !== $definition->getName()) {
                     $duplicate = $definitions->findOneBy(['normalizedName' => mb_strtolower($name, 'UTF-8')]);
@@ -263,6 +268,15 @@ final class AttributeLibraryController extends AbstractController
             }
         }
         return $this->redirectToRoute('app_attributes_edit', ['id' => $definition->getId()]);
+    }
+
+    private function validateRequiredChoices(FormInterface $form): void
+    {
+        foreach (['category' => 'Choose a category.', 'type' => 'Choose an attribute type.'] as $field => $message) {
+            if ($form->get($field)->isSynchronized() && $form->get($field)->getData() === null) {
+                $form->get($field)->addError(new FormError($message));
+            }
+        }
     }
 
     /** @param list<AttributeCategory> $categories */

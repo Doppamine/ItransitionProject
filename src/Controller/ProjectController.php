@@ -137,6 +137,10 @@ final class ProjectController extends AbstractController
         if (mb_strlen((string) ($data['description'] ?? '')) > 10000) {
             $form->get('description')->addError(new FormError('Description must be at most 10000 characters.'));
         }
+        if (mb_strlen((string) ($data['tags'] ?? '')) > 2500) {
+            $form->get('tags')->addError(new FormError('Technology tags must be at most 2500 characters.'));
+            return [];
+        }
         try {
             return $tags->parse((string) ($data['tags'] ?? ''));
         } catch (\InvalidArgumentException $exception) {

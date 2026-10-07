@@ -349,3 +349,12 @@ salesforce:
     failed: Не удалось выполнить экспорт в Salesforce. Попробуйте ещё раз.
     nav: Salesforce
     contact_last_name: Фамилия контакта
+    job_title_required: Укажите должность.
+    phone_required: Укажите номер телефона.
+    website_required: Укажите URL веб-сайта.
+    profile_required: 'Заполните поле «%field%» в профиле перед экспортом.'
+    contact_first_name: Имя контакта
+    contact_location: Местоположение контакта
+    first_name_required: Укажите имя контакта.
+    location_required: Укажите местоположение контакта.
+    profile_too_long: 'Сократите поле «%field%» в профиле до %limit% символов перед экспортом.'

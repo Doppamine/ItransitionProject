@@ -127,7 +127,7 @@ final class ProfileValueMapper
 
     private function parseDate(string $input): \DateTimeImmutable
     {
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $input);
+        $date = str_contains($input, "\0") ? false : \DateTimeImmutable::createFromFormat('!Y-m-d', $input);
         if ($date === false || $date->format('Y-m-d') !== $input) {
             throw new \InvalidArgumentException('Enter a valid date.');
         }

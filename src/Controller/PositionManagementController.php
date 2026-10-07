@@ -44,8 +44,8 @@ final class PositionManagementController extends AbstractController
         $form = $this->createForm(PositionType::class, ['shortDescription' => '', 'accessType' => 'public', 'maxProjects' => 0]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
             try {
+                $data = $this->validData($form);
                 $position = new Position((string) $data['title'], (string) ($data['shortDescription'] ?? ''), PositionAccessType::from($data['accessType']), (int) $data['maxProjects']);
                 $em->persist($position);
                 $em->flush();
@@ -70,8 +70,8 @@ final class PositionManagementController extends AbstractController
         $form->handleRequest($request);
         $status = 200;
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
             try {
+                $data = $this->validData($form);
                 $this->lock($position, $data['version'] ?? null, $em);
                 $position->update((string) $data['title'], (string) ($data['shortDescription'] ?? ''), PositionAccessType::from($data['accessType']), (int) $data['maxProjects']);
                 $em->flush();
@@ -123,6 +123,7 @@ final class PositionManagementController extends AbstractController
         if (($error = $this->lockChild($position, $request, $em)) !== null) { return $error; }
         $definitionId = $request->request->get('definition');
         $sortOrder = $request->request->get('sortOrder');
+        if (is_string($sortOrder) && ctype_digit($sortOrder) && (int) $sortOrder > 2147483647) { return new Response('Invalid order.', 422); }
         $definition = is_string($definitionId) && ctype_digit($definitionId) ? $em->find(AttributeDefinition::class, (int) $definitionId) : null;
         try {
             if (!$definition instanceof AttributeDefinition || !is_string($sortOrder) || !ctype_digit($sortOrder)) { throw new \InvalidArgumentException('Choose an attribute and a non-negative order.'); }
@@ -152,7 +153,7 @@ final class PositionManagementController extends AbstractController
         $position = $positions->findDetailed($id) ?? throw $this->createNotFoundException('Position not found.');
         if (($error = $this->lockChild($position, $request, $em)) !== null) { return $error; }
         $order = $request->request->get('sortOrder');
-        if (!is_string($order) || !ctype_digit($order)) { return new Response('Invalid order.', 422); }
+        if (!is_string($order) || !ctype_digit($order) || (int) $order > 2147483647) { return new Response('Invalid order.', 422); }
         $position->moveAttribute($this->attribute($position, $childId), (int) $order);
         $em->flush();
         return $this->redirectToRoute('app_positions_edit', ['id' => $id]);
@@ -213,8 +214,8 @@ final class PositionManagementController extends AbstractController
         $form->handleRequest($request);
         $status = 200;
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
             try {
+                $data = $this->validData($form);
                 $this->lock($position, $data['version'] ?? null, $em);
                 $operator = AccessRuleOperator::from((string) $data['operator']);
                 $rule = new PositionAccessRule($position, $definition, $operator);
@@ -266,6 +267,21 @@ final class PositionManagementController extends AbstractController
         $category = $request->query->get('attribute_category');
         return [is_string($query) ? mb_substr(trim($query), 0, 255) : '',
             is_string($category) && ctype_digit($category) && (int) $category > 0 ? (int) $category : null];
+    }
+
+    /** @return array<string, mixed> */
+    private function validData(FormInterface $form): array
+    {
+        $data = $form->getData();
+        foreach (['accessType' => 'Choose an access type.', 'maxProjects' => 'Enter a maximum number of projects.', 'operator' => 'Choose an operator.'] as $field => $message) {
+            if ($form->has($field) && $data[$field] === null) {
+                throw new \InvalidArgumentException($message);
+            }
+        }
+        if ($form->has('maxProjects') && $data['maxProjects'] > 2147483647) {
+            throw new \InvalidArgumentException('Maximum projects is too large.');
+        }
+        return $data;
     }
 
     private function lock(Position $position, mixed $version, EntityManagerInterface $em): void

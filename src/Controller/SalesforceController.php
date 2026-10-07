@@ -51,26 +51,30 @@ final class SalesforceController extends AbstractController
 
     private function export(User $user, Request $request, string $route, array $parameters = []): Response
     {
-        $details = $this->profileDetails($this->profiles->findForUser($user));
+        $profile = $this->profiles->findForUser($user);
+        $details = $this->profileDetails($profile);
         $form = $this->createForm(SalesforceExportType::class, null, [
             'action' => $this->generateUrl($route, $parameters),
-            'needs_last_name' => $details['lastName'] === null,
+            'needs_contact_details' => $profile === null,
         ]);
         $form->handleRequest($request);
-        $status = $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK;
+        $status = $request->isMethod('POST') ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK;
+        if ($request->isMethod('POST') && !$form->isSubmitted()) {
+            $form->addError(new FormError($this->translator->trans('salesforce.invalid_fields')));
+        }
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $this->validData($form);
+            $data = $this->validData($form, $profile === null ? null : $details);
             if ($form->isValid()) {
                 try {
                     $this->creator->create(new SalesforceAccountContactInput(
                         companyName: $data['companyName'],
                         lastName: $details['lastName'] ?? $data['lastName'],
                         website: $this->optional($data['website']),
-                        firstName: $details['firstName'],
+                        firstName: $details['firstName'] ?? $data['firstName'],
                         email: $user->getEmail(),
                         jobTitle: $this->optional($data['jobTitle']),
                         phone: $this->optional($data['phone']),
-                        location: $details['location'],
+                        location: $details['location'] ?? $data['location'],
                     ));
                     $this->addFlash('success', 'salesforce.created');
 
@@ -89,18 +93,29 @@ final class SalesforceController extends AbstractController
         ], new Response(status: $status));
     }
 
-    /** @return array<string, string> */
-    private function validData(FormInterface $form): array
+    /** @param array{firstName: ?string, lastName: ?string, location: ?string}|null $profileDetails
+     *  @return array<string, string>
+     */
+    private function validData(FormInterface $form, ?array $profileDetails): array
     {
         $data = array_map(static fn (?string $value): string => trim($value ?? ''), $form->getData());
         if ($form->getExtraData() !== []) {
             $form->addError(new FormError($this->translator->trans('salesforce.invalid_fields')));
         }
-        if ($data['companyName'] === '') {
-            $form->get('companyName')->addError(new FormError($this->translator->trans('salesforce.company_required')));
+        foreach (['companyName' => 'company_required', 'jobTitle' => 'job_title_required', 'phone' => 'phone_required', 'website' => 'website_required',
+            'firstName' => 'first_name_required', 'lastName' => 'last_name_required', 'location' => 'location_required'] as $field => $message) {
+            if ($form->has($field) && $data[$field] === '') {
+                $form->get($field)->addError(new FormError($this->translator->trans('salesforce.'.$message)));
+            }
         }
-        if ($form->has('lastName') && $data['lastName'] === '') {
-            $form->get('lastName')->addError(new FormError($this->translator->trans('salesforce.last_name_required')));
+        foreach ($profileDetails ?? [] as $field => $value) {
+            if ($value === null) {
+                $form->addError(new FormError($this->translator->trans('salesforce.profile_required', ['%field%' => $this->translator->trans('salesforce.'.$field)])));
+            } elseif (mb_strlen($value) > SalesforceExportType::MAX_LENGTHS[$field]) {
+                $form->addError(new FormError($this->translator->trans('salesforce.profile_too_long', [
+                    '%field%' => $this->translator->trans('salesforce.'.$field), '%limit%' => SalesforceExportType::MAX_LENGTHS[$field],
+                ])));
+            }
         }
         foreach (SalesforceExportType::MAX_LENGTHS as $field => $limit) {
             if ($form->has($field) && mb_strlen($data[$field]) > $limit) {

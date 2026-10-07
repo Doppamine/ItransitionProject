@@ -358,3 +358,19 @@ salesforce:
     first_name_required: Enter a Contact first name.
     location_required: Enter a Contact location.
     profile_too_long: 'Shorten the "%field%" field in your Profile to at most %limit% characters before exporting.'
+
+support:
+    nav: Support
+    title: Support
+    summary: Summary
+    priority: Priority
+    high: High
+    average: Average
+    low: Low
+    submit: Submit support ticket
+    created: Support ticket submitted.
+    failed: Could not submit the support ticket. Please try again.
+    summary_required: Enter a summary.
+    summary_too_long: Use at most 2000 characters.
+    priority_invalid: Choose High, Average, or Low.
+    invalid_fields: Unexpected form fields were submitted.

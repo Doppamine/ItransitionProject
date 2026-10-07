@@ -1,0 +1,4 @@
+services:
+    App\Integration\Dropbox\DropboxClient:
+        autowire: true
+        public: true
